@@ -18,6 +18,7 @@
  *         cluster_diag --clear [file] delete the stored DTCs and exit (only with the server stopped) */
 #include <arpa/inet.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <poll.h>
 #include <pthread.h>
@@ -97,6 +98,17 @@ static int nvm_write(const char *path, const dem_t *d)
     if (!ok || rename(tmp, path) != 0) {
         remove(tmp);
         return -1;
+    }
+    /* the new name lives in the folder: without this a power loss right after the rename can bring the old file back */
+    char dir[256];
+    snprintf(dir, sizeof dir, "%s", path);
+    char *slash = strrchr(dir, '/');
+    if (slash) *(slash == dir ? slash + 1 : slash) = '\0';
+    else snprintf(dir, sizeof dir, ".");
+    int dfd = open(dir, O_RDONLY);
+    if (dfd >= 0) {
+        (void)fsync(dfd);     /* not every file system syncs a folder; the file itself is already safe */
+        close(dfd);
     }
     return 0;
 }
@@ -299,7 +311,13 @@ static int run_server(const char *nvm)
     g_t0 = now_s();
     if (rc == 0) LOG("DTC memory loaded from %s", nvm);
     else if (rc == 1) LOG("no DTC memory at %s: starting empty", nvm);
-    else LOG("DTC memory at %s is damaged: starting empty", nvm);
+    else {
+        /* the next save would overwrite it: keep the damaged file for a look */
+        char bad[256];
+        snprintf(bad, sizeof bad, "%s.bad", nvm);
+        if (rename(nvm, bad) == 0) LOG("DTC memory at %s is damaged: starting empty (the file is kept as %s)", nvm, bad);
+        else LOG("DTC memory at %s is damaged: starting empty", nvm);
+    }
     dem_print(stdout, &g_dem);
     fflush(stdout);
 

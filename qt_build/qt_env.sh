@@ -27,8 +27,15 @@ case "$QNX_ARCH" in
         echo "ERROR: QNX_ARCH must be x86_64 or aarch64le (is: $QNX_ARCH)" >&2
         return 1 2> /dev/null || exit 1 ;;
 esac
-QT_QNX_PREFIX="${QT_QNX_PREFIX:-/data/qt6}"     # where it lives on the target
-QNX_USER="${QNX_USER:-root}"                    # SSH user on the target
+# Where Qt lives on the target, and the SSH user. The Pi's quick start image does not let root log in over SSH and
+# qnxuser cannot write /data, so there it is qnxuser's home folder (as in run_qt.sh, check_env.sh and the launcher).
+if [ "$QNX_ARCH" = aarch64le ]; then
+    QT_QNX_PREFIX="${QT_QNX_PREFIX:-/data/home/qnxuser/qt6}"
+    QNX_USER="${QNX_USER:-qnxuser}"
+else
+    QT_QNX_PREFIX="${QT_QNX_PREFIX:-/data/qt6}"
+    QNX_USER="${QNX_USER:-root}"
+fi
 JOBS="${JOBS:-6}"                   # parallel compile jobs; 6 worked with 11 GB for WSL, use JOBS=3 if memory runs out
 
 qt_clean_path() {

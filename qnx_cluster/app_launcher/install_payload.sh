@@ -7,6 +7,8 @@
 # setup.sh does, step 0-3 and 7-4 of the tutorial). Existing folders are first copied to <name>.bak-<date-time>,
 # then the new files are written over them: recordings, reports and the build folders stay, edited project files are
 # replaced (the backup keeps them). The programs built from the old sources are deleted, so they get built again.
+# Each folder gets a list of the files that came from the payload (.payload_files). The next update deletes the ones
+# of that list that the new payload no longer has, so a file that was removed or renamed does not stay behind.
 set -eu
 ZIP="${1:?usage: bash install_payload.sh <payload.zip>}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
@@ -19,22 +21,35 @@ NEW="$TMP/qnx-everywhere-projects"
 [ -f "$NEW/setup.sh" ] || { echo "ERROR: the payload has no qnx-everywhere-projects/setup.sh" >&2; exit 1; }
 
 backup() {
-    if [ -e "$1" ]; then
-        cp -a "$1" "$1.bak-$STAMP"
-        echo "backup  $1.bak-$STAMP"
+    [ -e "$1" ] || return 0
+    local b="$1.bak-$STAMP" n=1
+    while [ -e "$b" ]; do b="$1.bak-$STAMP-$n"; n=$((n + 1)); done   # two updates within one second
+    cp -a "$1" "$b"
+    echo "backup  $b"
+}
+
+# install <payload folder> <destination>: copy, after deleting what the last payload had and this one has not
+install_dir() {
+    local src="$1" dst="$2" f
+    mkdir -p "$dst"
+    if [ -f "$dst/.payload_files" ]; then
+        while IFS= read -r f; do
+            case "$f" in ""|/*|*..*) continue ;; esac            # only plain relative paths of the list
+            [ -e "$src/$f" ] || { rm -f "$dst/$f" && echo "removed $dst/$f (not in this version)"; }
+        done < "$dst/.payload_files"
     fi
+    cp -r "$src/." "$dst/"
+    (cd "$src" && find . -type f | sed 's|^\./||' | sort) > "$dst/.payload_files"
 }
 
 backup "$HOME/qnx-everywhere-projects"
-mkdir -p "$HOME/qnx-everywhere-projects"
-cp -r "$NEW/." "$HOME/qnx-everywhere-projects/"
+install_dir "$NEW" "$HOME/qnx-everywhere-projects"
 echo "OK      $HOME/qnx-everywhere-projects"
 
 for p in qnx_demo qnx_cluster; do
     d="$HOME/$p"
     backup "$d"
-    mkdir -p "$d"
-    cp -r "$NEW/$p/." "$d/"
+    install_dir "$NEW/$p" "$d"
     # the same as setup.sh: fill in the home folder, make the build script runnable
     # (the placeholder is put together here, so this script does not match and rewrite itself)
     ph="__HO""ME__"

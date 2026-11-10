@@ -57,6 +57,10 @@ def decode_snapshot(resp):
     return out
 
 
+class Paused(Exception):
+    """A background request was skipped: a test job talks to cluster_diag itself."""
+
+
 class Uds:
     def __init__(self, ip, port=5556):
         self.dest = (ip, port)
@@ -83,10 +87,14 @@ class Uds:
             self.info["online"] = False
 
     # ---- one request ----
-    def request(self, uds, timeout=1.0, note="", log=True):
-        """Sends a request, waits for the answer (also for NRC 0x78). Returns the response bytes or None."""
+    def request(self, uds, timeout=1.0, note="", log=True, background=False):
+        """Sends a request, waits for the answer (also for NRC 0x78). Returns the response bytes or None.
+        background: a request of the refresh or keepalive thread. It is checked under the lock, so none goes out
+        once a test job has the port (pause() waits for the one in flight): raises Paused instead."""
         uds = bytes(uds)
         with self.lock:
+            if background and self.paused:
+                raise Paused()
             self.flush()
             buf = io.StringIO()
             resp = None
@@ -97,7 +105,10 @@ class Uds:
                         resp = refused
                     else:
                         resp = ut.recv_message(self.sock, self.dest, timeout, 0, 0)
-                        while resp is not None and len(resp) == 3 and resp[0] == 0x7F and resp[2] == 0x78:
+                        pending = 0
+                        while (resp is not None and len(resp) == 3 and resp[0] == 0x7F and resp[2] == 0x78
+                               and pending < ut.MAX_PENDING):
+                            pending += 1
                             resp = ut.recv_message(self.sock, self.dest, 5.0, 0, 0)
             except (ValueError, OSError) as e:
                 note = (note + " " if note else "") + str(e)
@@ -106,6 +117,12 @@ class Uds:
                                  "note": note or buf.getvalue().strip()})
                 del self.log[:-60]
             return resp
+
+    def pause(self, on):
+        """A test job takes the UDS port (on) or gives it back. Returns once no background request is in flight."""
+        self.paused = on
+        with self.lock:
+            pass
 
     def flush(self):
         self.sock.setblocking(False)
@@ -214,7 +231,7 @@ class Uds:
 
     # ---- background threads ----
     def refresh_once(self):
-        r = self.request([0x22, 0xF1, 0x86], 0.5, log=False)
+        r = self.request([0x22, 0xF1, 0x86], 0.5, log=False, background=True)
         info = self.info
         if r is None:
             self.misses += 1
@@ -227,13 +244,13 @@ class Uds:
             info["session"] = SESSIONS.get(r[3], "0x%02X" % r[3])
             if r[3] == 1:
                 info["unlocked"] = False
-        r = self.request([0x22, 0x01, 0x00], 0.5, log=False)
+        r = self.request([0x22, 0x01, 0x00], 0.5, log=False, background=True)
         if r and len(r) == 7 and r[0] == 0x62:
             info["uptime"] = int.from_bytes(r[3:7], "big")
-        r = self.request([0x19, 0x02, 0xFF], 0.5, log=False)
+        r = self.request([0x19, 0x02, 0xFF], 0.5, log=False, background=True)
         if r and r[0] == 0x59:
             info["dtcs"] = decode_dtcs(r)
-        r = self.request([0x22, 0x02, 0x00], 0.5, log=False)
+        r = self.request([0x22, 0x02, 0x00], 0.5, log=False, background=True)
         if r and len(r) == 13 and r[0] == 0x62:
             info["vehicle"], info["vehicle_note"] = decode_vehicle(r[3:13]), ""
         elif self.nrc(r) is not None:
@@ -244,6 +261,8 @@ class Uds:
             if self.refresh_on and not self.paused:
                 try:
                     self.refresh_once()
+                except Paused:
+                    pass
                 except OSError:
                     self.info["online"] = False
             time.sleep(1.0)
@@ -252,4 +271,7 @@ class Uds:
         while not self.stop:
             time.sleep(2.0)
             if self.keepalive and not self.paused:
-                self.request([0x3E, 0x00], 0.5, log=False)
+                try:
+                    self.request([0x3E, 0x00], 0.5, log=False, background=True)
+                except Paused:
+                    pass

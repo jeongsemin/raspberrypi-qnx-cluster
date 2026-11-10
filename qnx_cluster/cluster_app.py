@@ -83,7 +83,7 @@ class App:
 
     def exclusive(self, on):
         """A job that talks to cluster_diag itself: the page must stay off the UDS port meanwhile."""
-        self.uds.paused = on
+        self.uds.pause(on)
 
     def set_ip(self, ip):
         if not valid_ip(ip):
@@ -234,7 +234,10 @@ def make_handler(app, port):
                                         "target": app_jobs.TARGET_NAME})
             if url.path == "/api/job":
                 q = parse_qs(url.query)
-                job = app.jobs.get(int(q.get("id", ["0"])[0]), int(q.get("from", ["0"])[0]))
+                try:
+                    job = app.jobs.get(int(q.get("id", ["0"])[0]), int(q.get("from", ["0"])[0]))
+                except ValueError:
+                    return self.reply(400, {"error": "id and from must be numbers"})
                 return self.reply(200 if job else 404, job or {"error": "no such job"})
             m = re.fullmatch(r"/reports/(report-\d{8}-\d{6}\.html)", url.path)
             if m and os.path.exists(os.path.join(REPORTS, m.group(1))):
@@ -249,6 +252,8 @@ def make_handler(app, port):
             try:
                 n = int(self.headers.get("Content-Length", "0"))
                 d = json.loads(self.rfile.read(n) or b"{}")
+                if not isinstance(d, dict):
+                    raise ValueError("the body must be a JSON object")
                 path = urlparse(self.path).path
                 if path == "/api/ecu":
                     return self.reply(200, app.do_ecu(d))
@@ -262,8 +267,10 @@ def make_handler(app, port):
                 if path == "/api/report":
                     return self.reply(200, {"name": app.save_report()})
                 self.reply(404, {"error": "not found"})
-            except (ValueError, KeyError, TypeError, RuntimeError) as e:
+            except (ValueError, KeyError, TypeError, RuntimeError, IndexError) as e:
                 self.reply(400, {"error": str(e)})
+            except Exception as e:          # a bug must still give the page a message, not a dropped connection
+                self.reply(500, {"error": "내부 오류: %r" % (e,)})
 
     return Handler
 

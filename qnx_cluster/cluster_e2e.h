@@ -131,6 +131,7 @@ static inline e2e_result_t e2e_check(e2e_state_t *s, const vehicle_msg_t *m)
             s->n_wrongseq++;
             s->prev_seq = m->seq; /* resynchronise on the new counter, but do not show this one */
             s->jump_run = 0;
+            s->since++;           /* at least one period passed: the next jump check must allow for it */
             return E2E_WRONG_SEQ;
         }
     }

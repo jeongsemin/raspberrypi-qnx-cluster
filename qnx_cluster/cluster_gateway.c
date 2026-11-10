@@ -127,6 +127,10 @@ static int parse_warn(const char *s, unsigned *out)
 static int apply_text(const char *text, target_t *tgt, char *err, size_t errlen)
 {
     char buf[256];
+    if (strlen(text) >= sizeof buf) {   /* cut, its last value could be read as a different number */
+        snprintf(err, errlen, "command too long (%zu bytes, at most %zu)", strlen(text), sizeof buf - 1);
+        return -1;
+    }
     snprintf(buf, sizeof buf, "%s", text);
     target_t t = *tgt;
     int any = 0;

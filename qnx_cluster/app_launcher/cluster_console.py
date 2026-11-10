@@ -21,10 +21,12 @@ and the VM keep running (stop them with "bash rpi4/start_pi.sh stop" or "bash st
 Build the exe with build_exe.ps1 (needs Python, PyInstaller and pywebview on Windows).
 """
 import argparse
+import collections
 import ctypes
 import json
 import os
 import re
+import shlex
 import socket
 import subprocess
 import sys
@@ -43,7 +45,9 @@ CLUSTER_DIR = "~/qnx_cluster"
 QT_BUILD_DIR = "~/qnx-everywhere-projects/qt_build"
 # the default VNC password that the QNX quick start image sets for vncserv (post_startup.sh)
 VNC_PASSWORD = "qnxuser"
-VNC_VIEWERS = (r"C:\Program Files\uvnc\UltraVNC\vncviewer.exe", r"C:\Program Files (x86)\uvnc\UltraVNC\vncviewer.exe")
+VNC_VIEWERS = (r"C:\Program Files\uvnc\UltraVNC\vncviewer.exe", r"C:\Program Files (x86)\uvnc\UltraVNC\vncviewer.exe",
+               # older installers
+               r"C:\Program Files\uvnc bvba\UltraVNC\vncviewer.exe", r"C:\Program Files (x86)\uvnc bvba\UltraVNC\vncviewer.exe")
 
 TARGETS = {
     "pi": {"name": "라즈베리 파이", "ip": "192.168.3.138", "script": "rpi4/start_pi.sh", "arch": "aarch64le",
@@ -61,7 +65,7 @@ TARGETS = {
 ITEMS = {
     "wsl": ("WSL과 Ubuntu-24.04", "admin", "wsl.exe --install -d Ubuntu-24.04", [], False),
     "vnc": ("UltraVNC 뷰어 (파이 화면 보기)", "win",
-            "winget install -e --id uvncbvba.UltraVNC --accept-package-agreements --accept-source-agreements", [], False),
+            "winget install -e --id uvncbvba.UltraVNC --accept-package-agreements --accept-source-agreements", [], True),
     "apt": ("기본 도구 (python3, gcc, curl, ssh)", "term", "sudo apt update && sudo apt install -y python3 gcc curl openssh-client",
             ["wsl"], False),
     "projects": ("프로젝트 파일 (~/qnx-everywhere-projects, ~/qnx_cluster)", "auto", "INSTALL_PAYLOAD", ["wsl"], False),
@@ -361,7 +365,7 @@ class Launcher:
 
     def bundled(self, name):
         """A bundled script, run with LF line endings whatever the checkout had."""
-        return "sed 's/\\r$//' '%s' | bash -s --" % wsl_path(os.path.join(BASE, name))
+        return "sed 's/\\r$//' %s | bash -s --" % shlex.quote(wsl_path(os.path.join(BASE, name)))
 
     def fill(self, text):
         return text.format(ip=self.ip, arch=TARGETS[self.target]["arch"])
@@ -492,7 +496,7 @@ class Launcher:
                 if not os.path.exists(z):
                     self.js("flog", "이 exe에 payload.zip이 없습니다. build_exe.ps1로 다시 빌드하세요.")
                     return
-                cmd = "%s '%s'" % (self.bundled("install_payload.sh"), wsl_path(z))
+                cmd = "%s %s" % (self.bundled("install_payload.sh"), shlex.quote(wsl_path(z)))
             else:
                 cmd = self.fill(ITEMS[item][2])
             self.js("flog", "$ " + cmd)
@@ -538,15 +542,16 @@ class Launcher:
         # 3. the console
         self.js("step", "테스트 콘솔을 시작하는 중...")
         self.console = self.wsl("cd %s && %sexec python3 cluster_app.py %s --port %d --idle-exit 120" % (CLUSTER_DIR, t["env"], ip, a.port))
+        console_out = collections.deque(maxlen=40)
+        threading.Thread(target=lambda: console_out.extend(self.console.stdout), daemon=True).start()
         end = time.time() + 40
         while time.time() < end and not answering(self.url):
             if self.console.poll() is not None:
                 break
             time.sleep(0.4)
         if not answering(self.url):
-            out = b""
-            if self.console.poll() is not None:
-                out = self.console.stdout.read() or b""
+            time.sleep(0.5)                   # the last lines of a console that stopped
+            out = b"".join(console_out)
             self.js("line", out.decode("utf-8", "replace").replace("\x00", "")[-600:])
             self.js("step", "테스트 콘솔이 시작되지 않았습니다. 이 창을 닫고 다시 실행해 환경 점검을 보세요.")
             return

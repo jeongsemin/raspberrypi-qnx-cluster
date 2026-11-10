@@ -25,3 +25,4 @@ qnx_cluster/reports/
 CLAUDE.md
 AGENTS.md
 .claude/
+.payload_files

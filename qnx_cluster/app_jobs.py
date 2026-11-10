@@ -2,11 +2,16 @@
 page sends a name, never a command line."""
 import os
 import shlex
+import signal
 import subprocess
 import threading
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+JOB_TIMEOUT = 900       # seconds; a command job that runs longer (a hung ssh) is stopped
+KEEP_LINES = 2000       # the output of a job keeps its newest lines
+SSH = "ssh -n -o BatchMode=yes -o ConnectTimeout=8 "
+SCP = "scp -q -o BatchMode=yes -o ConnectTimeout=8 "
 HOME = os.path.expanduser("~")
 
 # Target: the QEMU VM by default. QNX_ARCH=aarch64le selects the Raspberry Pi 4 (QNX 8.0 quick start image), where
@@ -43,10 +48,10 @@ JOBS = {
     "diag_dump": (TARGET_NAME + ": DTC 메모리 파일 보기", "vm", "bash run_diag.sh {ip} dump", False),
     "diag_wipe": (TARGET_NAME + ": DTC 메모리 파일 삭제", "vm", "bash run_diag.sh {ip} clear", False),
     "gw_start": (TARGET_NAME + ": cluster_gateway 복사 후 시작", "vm",
-                 "ssh -n -o BatchMode=yes " + SSH_USER + "@{ip} 'slay -f cluster_gateway; true'; "
-                 "scp -q -o BatchMode=yes " + ARCH + "/cluster_gateway " + SSH_USER + "@{ip}:/tmp/ && "
-                 "ssh -n -o BatchMode=yes " + SSH_USER + "@{ip} '(nohup /tmp/cluster_gateway > /tmp/g.log 2>&1 &)' && echo 'cluster_gateway started'", False),
-    "gw_stop": (TARGET_NAME + ": cluster_gateway 중지", "vm", "ssh -n -o BatchMode=yes " + SSH_USER + "@{ip} 'slay -f cluster_gateway; true'; echo stopped", False),
+                 SSH + SSH_USER + "@{ip} 'slay -f cluster_gateway; true'; "
+                 + SCP + ARCH + "/cluster_gateway " + SSH_USER + "@{ip}:/tmp/ && "
+                 + SSH + SSH_USER + "@{ip} '(nohup /tmp/cluster_gateway > /tmp/g.log 2>&1 &)' && echo 'cluster_gateway started'", False),
+    "gw_stop": (TARGET_NAME + ": cluster_gateway 중지", "vm", SSH + SSH_USER + "@{ip} 'slay -f cluster_gateway; true'; echo stopped", False),
     "freeze": (TARGET_NAME + ": qt_cluster를 4초 얼리기 (하트비트 DTC U1A04)", "vm", "bash run_diag.sh {ip} freeze 4", False),
     "qt_start": (TARGET_NAME + ": qt_cluster 복사 후 시작", "vm", "bash qt_cluster/run_qt.sh {ip}", False),
     "qt_stop": (TARGET_NAME + ": qt_cluster 중지", "vm", "bash qt_cluster/run_qt.sh {ip} stop", False),
@@ -76,7 +81,7 @@ class Jobs:
                 title, exclusive, cmd = self.native[name][0], True, None
             else:
                 title, _, cmd, exclusive = JOBS[name]
-            job = {"id": self.next_id, "name": name, "title": title, "state": "running", "rc": None, "lines": [],
+            job = {"id": self.next_id, "name": name, "title": title, "state": "running", "rc": None, "lines": [], "dropped": 0,
                    "started": time.time(), "secs": 0.0, "exclusive": exclusive}
             self.next_id += 1
             self.items.append(job)
@@ -90,7 +95,7 @@ class Jobs:
     def run_native(self, job, func):
         self.on_exclusive(True)
         try:
-            job["rc"] = func(lambda text: job["lines"].append(text))
+            job["rc"] = func(lambda text: self.add_line(job, text))
         except Exception as e:          # a bug in a test must show up as a failed job, not kill the thread silently
             job["lines"].append("예외: %r" % (e,))
             job["rc"] = 1
@@ -104,13 +109,20 @@ class Jobs:
             self.on_exclusive(True)
         try:
             p = subprocess.Popen(["bash", "-c", cmd], cwd=HERE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                 stdin=subprocess.DEVNULL, text=True, errors="replace", bufsize=1)
-            for line in p.stdout:
-                job["lines"].append(line.rstrip("\n"))
-                del job["lines"][:-2000]
-            job["rc"] = p.wait()
+                                 stdin=subprocess.DEVNULL, text=True, errors="replace", bufsize=1, start_new_session=True)
+            # the whole process group: killing bash alone would leave an ssh that keeps the output open
+            timer = threading.Timer(JOB_TIMEOUT, lambda: os.killpg(p.pid, signal.SIGKILL))
+            timer.start()
+            try:
+                for line in p.stdout:
+                    self.add_line(job, line.rstrip("\n"))
+                job["rc"] = p.wait()
+            finally:
+                if not timer.is_alive():
+                    self.add_line(job, "%d초 안에 끝나지 않아 멈췄습니다" % JOB_TIMEOUT)
+                timer.cancel()
         except OSError as e:
-            job["lines"].append(str(e))
+            self.add_line(job, str(e))
             job["rc"] = 127
         finally:
             job["secs"] = round(time.time() - job["started"], 1)
@@ -118,10 +130,21 @@ class Jobs:
             if job["exclusive"]:
                 self.on_exclusive(False)
 
+    @staticmethod
+    def add_line(job, text):
+        """Line numbers stay the same when the oldest lines are dropped: "from" in get() counts every line."""
+        job["lines"].append(text)
+        extra = len(job["lines"]) - KEEP_LINES
+        if extra > 0:
+            del job["lines"][:extra]
+            job["dropped"] += extra
+
     def get(self, job_id, start=0):
         for j in self.items:
             if j["id"] == job_id:
-                return {**{k: j[k] for k in ("id", "name", "title", "state", "rc", "secs")}, "lines": j["lines"][start:], "next": len(j["lines"])}
+                first = max(0, start - j["dropped"])
+                return {**{k: j[k] for k in ("id", "name", "title", "state", "rc", "secs")}, "lines": j["lines"][first:],
+                        "next": j["dropped"] + len(j["lines"])}
         return None
 
     def report_html(self, ip):

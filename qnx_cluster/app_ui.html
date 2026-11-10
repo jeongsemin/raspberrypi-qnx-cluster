@@ -233,7 +233,7 @@ const api = async (path, body) => {
   if (!r.ok) throw new Error(data.error || r.statusText);
   return data;
 };
-const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 let meta = null, state = null, editing = {};
 let activeJob = null, jobFrom = 0, jobLines = [];
 
@@ -368,9 +368,11 @@ async function startJob(name) {
 }
 async function pollJob() {
   if (!activeJob) return;
+  const id = activeJob, from = jobFrom;
   try {
-    const j = await api("/api/job?id=" + activeJob + "&from=" + jobFrom);
-    jobFrom = j.next; jobLines = jobLines.concat(j.lines);
+    const j = await api("/api/job?id=" + id + "&from=" + from);
+    if (id !== activeJob || from !== jobFrom) return;   // another job was chosen meanwhile, or another poll came first
+    jobFrom = j.next; jobLines = jobLines.concat(j.lines).slice(-2000);
     const out = $("job-out");
     const atEnd = out.scrollTop + out.clientHeight >= out.scrollHeight - 20;
     out.textContent = jobLines.join("\n");

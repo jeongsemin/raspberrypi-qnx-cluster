@@ -38,6 +38,8 @@ import sys
 import time
 
 ID_PHYS, ID_FUNC, ID_RESP = 0x7E0, 0x7DF, 0x7E8
+MAX_FC_WAITS = 10       # flow control "wait" frames we put up with (as cluster_isotp.h)
+MAX_PENDING = 6         # "response pending" answers we put up with: 6 x 5 s, then the request counts as unanswered
 PAD = 0xAA
 FC_BS = 0       # block size and STmin we ask the server for when it sends a long response (--bs, --stmin)
 FC_STMIN = 0
@@ -86,7 +88,9 @@ def dtc_text(b):
 
 def dtc_value(text):
     """'U0401' -> the three bytes of the DTC (fault type 0)."""
-    t = text.upper()
+    t = text.strip().upper()
+    if len(t) != 5 or t[0] not in "PCBU" or t[1] not in "0123" or any(c not in "0123456789ABCDEF" for c in t[2:]):
+        raise ValueError("DTC는 U0401 같은 형식이어야 합니다: %r" % text)
     v = ("PCBU".index(t[0]) << 14) | (int(t[1]) << 12) | int(t[2:], 16)
     return bytes([v >> 8, v & 0xFF, 0])
 
@@ -130,6 +134,9 @@ def send_message(sock, dest, uds, timeout):
         sock.sendto(sf_frame(ID_PHYS, uds), dest)
         return None
     n = len(uds)
+    if n > 4095:
+        raise ValueError("an ISO-TP message carries at most 4095 bytes (this one has %d)" % n)
+    waits = 0
     sock.sendto(can_frame(ID_PHYS, bytes([0x10 | (n >> 8), n & 0xFF]) + bytes(uds[:6])), dest)
     pos, sn = 6, 1
     while pos < n:
@@ -137,8 +144,11 @@ def send_message(sock, dest, uds, timeout):
         if fc is None or fc[0] >> 4 != 3:
             raise ValueError("no flow control after the first frame" if fc is None else "unexpected frame %s" % hexs(fc))
         fs, bs, stmin = fc[0] & 0x0F, fc[1] if len(fc) > 1 else 0, fc[2] if len(fc) > 2 else 0
-        if fs == 1:
-            continue                                    # wait: ask again
+        if fs == 1:                                     # wait: the receiver sends another flow control later
+            waits += 1
+            if waits > MAX_FC_WAITS:
+                raise ValueError("the receiver sent %d flow control 'wait' frames in a row" % waits)
+            continue
         if fs != 0:
             return bytes(fc[:3])                        # overflow
         gap = stmin / 1000.0 if stmin <= 0x7F else (0.001 if 0xF1 <= stmin <= 0xF9 else 0.127)
@@ -169,6 +179,9 @@ def recv_message(sock, dest, timeout, bs, stmin):
         print("  <- (unexpected frame) %s" % hexs(data))
         return None
     total = ((data[0] & 0x0F) << 8) | data[1]
+    if total <= 6:
+        print("  <- (a first frame for %d bytes: that fits in a single frame)" % total)
+        return None
     msg = bytearray(data[2:8])
     sock.sendto(can_frame(ID_PHYS, bytes([0x30, bs, stmin])), dest)
     sn, block = 1, 0
@@ -202,7 +215,9 @@ def request(sock, dest, uds, functional=False, timeout=1.0):
             print("  <- flow control %s (overflow: the server will not take %d bytes)" % (hexs(refused), len(uds)))
             return refused
     resp = recv_message(sock, dest, timeout, FC_BS, FC_STMIN)
-    while resp is not None and len(resp) == 3 and resp[0] == 0x7F and resp[2] == 0x78:
+    pending = 0
+    while resp is not None and len(resp) == 3 and resp[0] == 0x7F and resp[2] == 0x78 and pending < MAX_PENDING:
+        pending += 1
         print("  <- %s   (response pending: the server needs more time, waiting up to 5 s)" % hexs(resp))
         resp = recv_message(sock, dest, 5.0, FC_BS, FC_STMIN)
     if resp is None:
