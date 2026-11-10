@@ -1,0 +1,353 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "QNX: build debug",
+      "command": "mkdir -p ${config:qnx.arch} && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/cluster_display cluster_display.c -lscreen -lm && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/speed_source speed_source.c -lm && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/cluster_supervisor cluster_supervisor.c && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/cluster_gateway cluster_gateway.c -lsocket -lm && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/cluster_diag cluster_diag.c -lsocket",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "QNX_HOST": "__HOME__/qnx800/host/linux/x86_64",
+          "QNX_TARGET": "__HOME__/qnx800/target/qnx",
+          "MAKEFLAGS": "-I__HOME__/qnx800/target/qnx/usr/include",
+          "PATH": "__HOME__/qnx800/host/linux/x86_64/usr/bin:${env:PATH}"
+        }
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "QNX: build cluster_gateway",
+      "command": "mkdir -p ${config:qnx.arch} && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/cluster_gateway cluster_gateway.c -lsocket -lm",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "QNX_HOST": "__HOME__/qnx800/host/linux/x86_64",
+          "QNX_TARGET": "__HOME__/qnx800/target/qnx",
+          "MAKEFLAGS": "-I__HOME__/qnx800/target/qnx/usr/include",
+          "PATH": "__HOME__/qnx800/host/linux/x86_64/usr/bin:${env:PATH}"
+        }
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "type": "shell",
+      "label": "QNX: build cluster_display",
+      "command": "mkdir -p ${config:qnx.arch} && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/cluster_display cluster_display.c -lscreen -lm",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "QNX_HOST": "__HOME__/qnx800/host/linux/x86_64",
+          "QNX_TARGET": "__HOME__/qnx800/target/qnx",
+          "MAKEFLAGS": "-I__HOME__/qnx800/target/qnx/usr/include",
+          "PATH": "__HOME__/qnx800/host/linux/x86_64/usr/bin:${env:PATH}"
+        }
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "type": "shell",
+      "label": "QNX: build speed_source",
+      "command": "mkdir -p ${config:qnx.arch} && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/speed_source speed_source.c -lm",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "QNX_HOST": "__HOME__/qnx800/host/linux/x86_64",
+          "QNX_TARGET": "__HOME__/qnx800/target/qnx",
+          "MAKEFLAGS": "-I__HOME__/qnx800/target/qnx/usr/include",
+          "PATH": "__HOME__/qnx800/host/linux/x86_64/usr/bin:${env:PATH}"
+        }
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "type": "shell",
+      "label": "QNX: build cluster_supervisor",
+      "command": "mkdir -p ${config:qnx.arch} && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/cluster_supervisor cluster_supervisor.c",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "QNX_HOST": "__HOME__/qnx800/host/linux/x86_64",
+          "QNX_TARGET": "__HOME__/qnx800/target/qnx",
+          "MAKEFLAGS": "-I__HOME__/qnx800/target/qnx/usr/include",
+          "PATH": "__HOME__/qnx800/host/linux/x86_64/usr/bin:${env:PATH}"
+        }
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "type": "shell",
+      "label": "Qt: build qt_cluster",
+      "command": "bash qt_cluster/build_qt.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "type": "shell",
+      "label": "Qt: run qt_cluster on the VM",
+      "command": "bash qt_cluster/run_qt.sh ${input:vmIp}",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "dependsOn": ["Qt: build qt_cluster"]
+    },
+    {
+      "type": "shell",
+      "label": "Qt: 2-minute drive demo",
+      "command": "bash qt_cluster/demo_2min.sh ${input:vmIp}",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "isBackground": false
+    },
+    {
+      "type": "shell",
+      "label": "Qt: driving scenario",
+      "command": "bash qt_cluster/scenarios.sh ${input:vmIp} ${input:scenario}",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "isBackground": false
+    },
+    {
+      "type": "shell",
+      "label": "Qt: stop qt_cluster",
+      "command": "bash qt_cluster/run_qt.sh ${input:vmIp} stop",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "App: test console (open http://localhost:8765)",
+      "command": "python3 cluster_app.py ${input:vmIp}",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "cluster_app",
+        "pattern": {
+          "regexp": "^never matches$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^never matches begin$",
+          "endsPattern": "^test console for"
+        }
+      }
+    },
+    {
+      "type": "shell",
+      "label": "Env: start everything (VM, qt_cluster, gateway, diag, console)",
+      "command": "bash start_env.sh ${input:vmIp}",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Env: stop the console and the VM",
+      "command": "bash start_env.sh stop",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "App: self-test of the test console",
+      "command": "python3 test_app.py",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "QNX: build cluster_diag",
+      "command": "mkdir -p ${config:qnx.arch} && qcc -Vgcc_nto${config:qnx.arch} -g -O0 -Wall -o ${config:qnx.arch}/cluster_diag cluster_diag.c -lsocket",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "QNX_HOST": "__HOME__/qnx800/host/linux/x86_64",
+          "QNX_TARGET": "__HOME__/qnx800/target/qnx",
+          "MAKEFLAGS": "-I__HOME__/qnx800/target/qnx/usr/include",
+          "PATH": "__HOME__/qnx800/host/linux/x86_64/usr/bin:${env:PATH}"
+        }
+      },
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "type": "shell",
+      "label": "Diag: run cluster_diag on the VM",
+      "command": "bash run_diag.sh ${input:vmIp}",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "dependsOn": ["QNX: build cluster_diag"]
+    },
+    {
+      "type": "shell",
+      "label": "Diag: UDS demo",
+      "command": "python3 uds_tester.py ${input:vmIp} demo",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Diag: UDS session timer test (20 s)",
+      "command": "python3 uds_tester.py ${input:vmIp} s3",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Diag: freeze qt_cluster for 4 s (heartbeat DTC U1A04)",
+      "command": "bash run_diag.sh ${input:vmIp} freeze 4",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Diag: UDS security demo (27 and 11, with refusals)",
+      "command": "python3 uds_tester.py ${input:vmIp} demo-security",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Diag: UDS ECU reset (unlock, then 11 01: cluster_diag restarts)",
+      "command": "python3 uds_tester.py ${input:vmIp} reset",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Diag: show the vehicle data now (22 0200)",
+      "command": "(python3 send_signal.py ${input:vmIp} --can speed=50 rpm=2500 gear=3 mode=comfort --seconds 6 > /dev/null &) ; sleep 2 ; python3 uds_tester.py ${input:vmIp} vehicle",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Diag: show the snapshot of a DTC (19 04)",
+      "command": "python3 uds_tester.py ${input:vmIp} snapshot ${input:dtcName}",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Diag: show DTC log",
+      "command": "bash run_diag.sh ${input:vmIp} log",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Diag: show DTC memory",
+      "command": "bash run_diag.sh ${input:vmIp} dump",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Diag: clear DTC memory",
+      "command": "bash run_diag.sh ${input:vmIp} clear",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "QNX: clean",
+      "command": "rm -rf x86_64 aarch64le",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "dtcName",
+      "type": "pickString",
+      "description": "Which DTC",
+      "options": ["U0401", "U0100", "U1A01", "U1A02", "U1A03", "U1A04"],
+      "default": "U0401"
+    },
+    {
+      "id": "scenario",
+      "type": "pickString",
+      "description": "Driving scenario (qt_cluster/scenarios.sh)",
+      "options": ["city", "highway", "overheat", "lowfuel", "coldstart", "warnings", "modes", "faults", "all"],
+      "default": "city"
+    },
+    {
+      "id": "vmIp",
+      "type": "promptString",
+      "description": "IP address of the QNX VM (mkqnximage --getip)",
+      "default": "192.168.122.146"
+    }
+  ]
+}

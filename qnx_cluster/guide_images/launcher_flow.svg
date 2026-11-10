@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 890 396" width="890" height="396" font-family="Malgun Gothic, Apple SD Gothic Neo, Noto Sans KR, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect width="890" height="396" rx="14" fill="#fff"/>
+<text x="445" y="38" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">ClusterConsole.exe가 하는 일</text>
+<rect x="30" y="62" width="250" height="112" rx="10" fill="#fef9c3" stroke="#a16207" stroke-width="1.5"/>
+<circle cx="52" cy="84" r="13" fill="#a16207"/><text x="52" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">1</text>
+<text x="72" y="89" font-size="14" font-weight="700" fill="#0f172a">대상 고르기</text>
+<text x="270" y="164" text-anchor="end" font-size="10.5" font-weight="700" fill="#a16207">exe + 직접</text>
+<text x="44" y="114" font-size="12" fill="#334155">라즈베리 파이 또는 QEMU VM</text>
+<text x="44" y="131" font-size="12" fill="#334155">파이는 'IP 찾기'로 IP 채우기</text>
+<rect x="320" y="62" width="250" height="112" rx="10" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+<circle cx="342" cy="84" r="13" fill="#4338ca"/><text x="342" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">2</text>
+<text x="362" y="89" font-size="14" font-weight="700" fill="#0f172a">환경 점검</text>
+<text x="560" y="164" text-anchor="end" font-size="10.5" font-weight="700" fill="#4338ca">자동</text>
+<text x="334" y="114" font-size="12" fill="#334155">PC, WSL, 대상의 준비 상태를</text>
+<text x="334" y="131" font-size="12" fill="#334155">항목마다 ✓ / ✕ 로 표시</text>
+<rect x="610" y="62" width="250" height="112" rx="10" fill="#fef9c3" stroke="#a16207" stroke-width="1.5"/>
+<circle cx="632" cy="84" r="13" fill="#a16207"/><text x="632" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">3</text>
+<text x="652" y="89" font-size="14" font-weight="700" fill="#0f172a">고치기</text>
+<text x="850" y="164" text-anchor="end" font-size="10.5" font-weight="700" fill="#a16207">exe + 직접</text>
+<text x="624" y="114" font-size="12" fill="#334155">✕ 항목의 버튼을 누르고</text>
+<text x="624" y="131" font-size="12" fill="#334155">'다시 점검' (모두 ✓ 이 될 때까지)</text>
+<rect x="610" y="220" width="250" height="112" rx="10" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+<circle cx="632" cy="242" r="13" fill="#4338ca"/><text x="632" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">4</text>
+<text x="652" y="247" font-size="14" font-weight="700" fill="#0f172a">대상 준비</text>
+<text x="850" y="322" text-anchor="end" font-size="10.5" font-weight="700" fill="#4338ca">자동</text>
+<text x="624" y="272" font-size="12" fill="#334155">파이: 프로그램 3개 시작</text>
+<text x="624" y="289" font-size="12" fill="#334155">VM: 꺼져 있으면 부팅부터</text>
+<rect x="320" y="220" width="250" height="112" rx="10" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+<circle cx="342" cy="242" r="13" fill="#4338ca"/><text x="342" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">5</text>
+<text x="362" y="247" font-size="14" font-weight="700" fill="#0f172a">화면 열기</text>
+<text x="560" y="322" text-anchor="end" font-size="10.5" font-weight="700" fill="#4338ca">자동</text>
+<text x="334" y="272" font-size="12" fill="#334155">파이: UltraVNC (비밀번호 자동)</text>
+<text x="334" y="289" font-size="12" fill="#334155">VM: QEMU 창이 이미 떠 있음</text>
+<rect x="30" y="220" width="250" height="112" rx="10" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+<circle cx="52" cy="242" r="13" fill="#4338ca"/><text x="52" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">6</text>
+<text x="72" y="247" font-size="14" font-weight="700" fill="#0f172a">테스트 콘솔</text>
+<text x="270" y="322" text-anchor="end" font-size="10.5" font-weight="700" fill="#4338ca">자동</text>
+<text x="44" y="272" font-size="12" fill="#334155">주행, 진단, 검사 탭</text>
+<text x="44" y="289" font-size="12" fill="#334155">창을 닫으면 콘솔과 VNC 정리</text>
+<line x1="283" y1="118" x2="317" y2="118" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="573" y1="118" x2="607" y2="118" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="735" y1="177" x2="735" y2="217" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="607" y1="276" x2="573" y2="276" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="317" y1="276" x2="283" y2="276" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<rect x="30" y="362" width="16" height="16" rx="3" fill="#e0e7ff" stroke="#4338ca"/><text x="52" y="375" font-size="12" fill="#334155">exe가 알아서</text>
+<rect x="150" y="362" width="16" height="16" rx="3" fill="#fef9c3" stroke="#a16207"/><text x="172" y="375" font-size="12" fill="#334155">exe와 직접 함께</text>
+</svg>

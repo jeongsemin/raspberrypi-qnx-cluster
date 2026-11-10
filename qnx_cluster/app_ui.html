@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>클러스터 테스트 콘솔</title>
+<style>
+:root {
+  --bg: #f4f5f7; --panel: #ffffff; --ink: #1c2330; --muted: #5d6778; --line: #d9dee6;
+  --accent: #1f6feb; --ok: #1a7f37; --bad: #cf222e; --warn: #9a6700; --code: #eef1f5;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #11151c; --panel: #1a202b; --ink: #e6eaf0; --muted: #98a2b3; --line: #2c3444;
+          --accent: #5b9dff; --ok: #3fb950; --bad: #f85149; --warn: #d29922; --code: #131820; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, "Segoe UI", sans-serif; }
+header { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
+header h1 { font-size: 16px; margin: 0 8px 0 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border: 1px solid var(--line); border-radius: 99px; font-size: 12px; color: var(--muted); background: var(--panel); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.dot.on { background: var(--ok); } .dot.off { background: var(--bad); }
+nav { display: flex; gap: 4px; padding: 10px 16px 0; }
+nav button { border: 1px solid var(--line); border-bottom: 0; border-radius: 8px 8px 0 0; background: transparent; color: var(--muted); padding: 7px 16px; cursor: pointer; font: inherit; }
+nav button.on { background: var(--panel); color: var(--ink); font-weight: 600; }
+main { padding: 0 16px 24px; }
+section.tab { display: none; background: var(--panel); border: 1px solid var(--line); border-radius: 0 8px 8px 8px; padding: 14px; }
+section.tab.on { display: block; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 14px; }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+.card h2 { font-size: 13px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.row { display: grid; grid-template-columns: 78px 1fr 70px; gap: 8px; align-items: center; margin: 6px 0; }
+.row label { color: var(--muted); }
+.row output { text-align: right; font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; }
+button.b, select, input[type=text] { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 5px 11px; }
+button.b { cursor: pointer; }
+button.b:hover { border-color: var(--accent); }
+button.b.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.b.danger { color: var(--bad); }
+button.b:disabled { opacity: .5; cursor: default; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.big { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stats { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 8px; }
+.stats small { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; }
+.flag { display: inline-block; font-size: 11px; padding: 0 6px; margin: 1px 2px 1px 0; border-radius: 4px; background: var(--code); border: 1px solid var(--line); }
+.flag.hot { border-color: var(--bad); color: var(--bad); }
+pre, .mono { font: 12px/1.45 ui-monospace, Consolas, monospace; }
+pre { background: var(--code); border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin: 6px 0 0; max-height: 340px; overflow: auto; white-space: pre-wrap; }
+.msg { margin: 6px 0; padding: 6px 10px; border-radius: 6px; background: var(--code); border-left: 3px solid var(--muted); }
+.msg.ok { border-left-color: var(--ok); } .msg.bad { border-left-color: var(--bad); }
+.bar { height: 8px; background: var(--code); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.bar > i { display: block; height: 100%; background: var(--accent); width: 0; }
+.muted { color: var(--muted); }
+.ok { color: var(--ok); } .bad { color: var(--bad); }
+.warnchips label { display: inline-flex; gap: 4px; margin: 2px 10px 2px 0; }
+.banner { margin: 10px 16px 0; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--warn); background: var(--panel); color: var(--warn); }
+canvas { width: 100%; height: 150px; display: block; }
+.job { display: flex; gap: 8px; align-items: center; padding: 3px 0; }
+@media (max-width: 560px) { .row { grid-template-columns: 62px 1fr 56px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>클러스터 테스트 콘솔</h1>
+  <span class="chip">대상 IP <input id="ip" type="text" size="14" style="padding:1px 6px;border-radius:4px"> <button class="b" id="setip" style="padding:1px 8px">적용</button></span>
+  <span class="chip"><span class="dot" id="d-vm"></span><span class="tgt">VM</span> ssh 연결</span>
+  <span class="chip"><span class="dot" id="d-gateway"></span>cluster_gateway</span>
+  <span class="chip"><span class="dot" id="d-qt"></span>qt_cluster</span>
+  <span class="chip"><span class="dot" id="d-diag"></span>cluster_diag</span>
+  <span class="chip"><span class="dot" id="d-uds"></span>UDS 응답</span>
+  <span class="chip"><span class="dot" id="d-gw"></span><span id="gwtxt">게이트웨이</span></span>
+</header>
+<div id="banner" class="banner" style="display:none"></div>
+<nav>
+  <button data-tab="drive" class="on">주행</button>
+  <button data-tab="diag">진단</button>
+  <button data-tab="checks">검사</button>
+</nav>
+<main>
+
+<section class="tab on" id="tab-drive">
+  <div class="grid">
+    <div class="card">
+      <h2>가상 ECU</h2>
+      <div class="stats">
+        <div><small>속도 km/h</small><span class="big" id="o-speed">0</span></div>
+        <div><small>rpm</small><span class="big" id="o-rpm">0</span></div>
+        <div><small>기어</small><span class="big" id="o-gear">N</span></div>
+      </div>
+      <div class="btns">
+        <button class="b primary" id="send-toggle">전송 시작</button>
+        <span class="muted" id="send-info"></span>
+      </div>
+      <div class="row"><label>속도</label><input type="range" id="s-speed" min="0" max="250" step="1"><output id="v-speed"></output></div>
+      <div class="row"><label>rpm</label><input type="range" id="s-rpm" min="0" max="8000" step="50"><output id="v-rpm"></output></div>
+      <div class="row"><label></label><span class="muted"><input type="checkbox" id="rpm-auto" checked> rpm을 속도에 맞춤</span><span></span></div>
+      <div class="row"><label>기어</label><select id="gear"><option value="auto">자동</option><option>N</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select><span></span></div>
+      <div class="row"><label>모드</label><select id="mode"></select><span></span></div>
+      <div class="row"><label>연료 %</label><input type="range" id="s-fuel" min="0" max="100" step="1"><output id="v-fuel"></output></div>
+      <div class="row"><label>냉각수 °C</label><input type="range" id="s-coolant" min="0" max="140" step="1"><output id="v-coolant"></output></div>
+      <div class="warnchips" id="warns"></div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>주행 시나리오</h2>
+        <div class="btns" id="scenarios"></div>
+        <div id="sc-run" class="muted">실행 중인 시나리오가 없습니다.</div>
+        <div class="bar"><i id="sc-bar"></i></div>
+        <div class="btns"><button class="b" id="sc-stop">시나리오 중지</button></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h2>CAN 프레임 결함</h2>
+        <div class="btns" id="faults"></div>
+        <div id="fault-run" class="muted">활성 결함이 없습니다. 결함은 몇 초 동안만 이어지고, 그 뒤 프레임은 다시 정상이 됩니다.</div>
+        <div class="btns"><button class="b" id="fault-clear">결함 바로 끝내기</button></div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <h2>주행 기록과 재생</h2>
+        <div class="btns"><button class="b" id="rec-toggle">기록 시작</button><span class="muted" id="rec-info"></span></div>
+        <div class="muted" style="font-size:12px">기록은 보내는 값(속도, rpm, 기어, 모드, 경고등, 연료, 냉각수)을 저장합니다. 결함은 기록하지 않습니다. 파일은 recordings 폴더에 남습니다.</div>
+        <div class="btns" id="recordings"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h2>그래프 (최근 60초)</h2>
+    <div class="muted" style="font-size:12px"><span style="color:var(--accent)">━</span> 보낸 값 &nbsp; <span style="color:var(--warn)">━</span> 클러스터가 되읽은 값 (UDS 22 0200, 1초마다)</div>
+    <div class="grid" style="margin-top:6px">
+      <div><div class="muted">속도 km/h</div><canvas id="ch-speed"></canvas></div>
+      <div><div class="muted">rpm</div><canvas id="ch-rpm"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab" id="tab-diag">
+  <div class="grid">
+    <div class="card">
+      <h2>ECU 상태</h2>
+      <div class="stats">
+        <div><small>세션</small><span class="big" id="g-session">-</span></div>
+        <div><small>보안</small><span class="big" id="g-sec">-</span></div>
+        <div><small>가동 시간</small><span class="big" id="g-up">-</span></div>
+      </div>
+      <div class="btns">
+        <button class="b" data-uds="session:extended">확장 세션</button>
+        <button class="b" data-uds="session:default">기본 세션</button>
+        <button class="b" data-uds="unlock">잠금 해제 (27)</button>
+        <button class="b danger" data-uds="reset">ECU 리셋 (11 01)</button>
+        <button class="b" data-uds="tester_present">테스터 존재 알림</button>
+      </div>
+      <div class="btns">
+        <label><input type="checkbox" id="keepalive"> 2초마다 TesterPresent 보내기</label>
+        <label><input type="checkbox" id="refresh" checked> 1초마다 새로고침</label>
+      </div>
+      <div class="muted" style="font-size:12px">새로고침은 값을 읽어 오는데, 요청이 갈 때마다 5초 세션 타이머가 다시 시작합니다. 켜 두면 확장 세션이 끊기지 않습니다. S3 타이머가 세션을 끝내는 것을 보려면 끄세요.</div>
+      <div id="uds-msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>지금의 차량 값 (22 0200)</h2>
+      <div id="vehicle" class="muted">-</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>DTC 메모리 (19 02)</h2>
+    <div class="btns">
+      <button class="b" data-uds="dtcs">지금 읽기</button>
+      <button class="b danger" data-uds="clear:all">전체 지우기</button>
+      <span class="muted" id="dtc-count"></span>
+    </div>
+    <table><thead><tr><th>DTC</th><th>뜻</th><th>상태</th><th>비트</th><th></th></tr></thead><tbody id="dtcs"></tbody></table>
+    <div id="snap"></div>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <div class="card">
+      <h2>직접 요청 보내기</h2>
+      <div class="btns"><input type="text" id="raw" placeholder="16진수 바이트, 예: 22 F1 90" size="26"><button class="b" id="raw-send">보내기</button></div>
+      <div class="btns"><button class="b" data-uds="did:F190">VIN (F190)</button><button class="b" data-uds="did:F195">소프트웨어 (F195)</button><button class="b" data-uds="did:0100">가동 시간 (0100)</button></div>
+    </div>
+    <div class="card">
+      <h2>최근 요청</h2>
+      <pre id="uds-log">-</pre>
+    </div>
+  </div>
+</section>
+
+<section class="tab" id="tab-checks">
+  <div class="grid">
+    <div class="card">
+      <h2>이 PC에서 도는 시험</h2>
+      <div id="jobs-tests"></div>
+      <div class="btns"><button class="b primary" id="run-all-tests">모두 실행</button></div>
+    </div>
+    <div class="card">
+      <h2>대상(<span class="tgt">VM</span>)에 대한 시험</h2>
+      <div id="jobs-target"></div>
+      <div class="btns"><button class="b primary" id="run-all-target">모두 실행</button><button class="b primary" id="run-everything">PC + <span class="tgt">VM</span> 시험 전부 실행</button></div>
+      <div class="muted" style="font-size:12px">이 시험이 도는 동안은 진단 페이지가 멈춥니다. 시험이 진단 포트를 직접 쓰기 때문입니다. 모두 실행은 약 2분 반 걸립니다.</div>
+    </div>
+    <div class="card">
+      <h2><span class="tgt">VM</span> 동작</h2>
+      <div id="jobs-vm"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h2>결과</h2>
+    <div class="btns"><button class="b" id="report-save">보고서 저장</button><span class="muted" id="report-msg"></span></div>
+    <div id="reports" class="muted"></div>
+    <div id="job-hist" class="muted">아직 실행한 것이 없습니다.</div>
+    <pre id="job-out">-</pre>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h2><span class="tgt">VM</span>의 cluster_diag 로그 (마지막 줄들)</h2>
+    <pre id="vm-log">-</pre>
+  </div>
+</section>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const api = async (path, body) => {
+  const opt = body === undefined ? {} : {method: "POST", headers: {"X-Cluster-App": "1", "Content-Type": "application/json"}, body: JSON.stringify(body)};
+  const r = await fetch(path, opt);
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+let meta = null, state = null, editing = {};
+let activeJob = null, jobFrom = 0, jobLines = [];
+
+// ---- tabs ----
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button, section.tab").forEach(e => e.classList.remove("on"));
+  b.classList.add("on");
+  $("tab-" + b.dataset.tab).classList.add("on");
+});
+
+// ---- drive ----
+const sliders = {speed: "s-speed", rpm: "s-rpm", fuel: "s-fuel", coolant: "s-coolant"};
+let pending = {}, sendTimer = null;
+function push(values) {
+  Object.assign(pending, values);
+  if (sendTimer) return;
+  sendTimer = setTimeout(() => {
+    const v = pending; pending = {}; sendTimer = null;
+    api("/api/ecu", {action: "set", values: v}).catch(e => console.warn(e));
+  }, 80);
+}
+for (const [key, id] of Object.entries(sliders)) {
+  const el = $(id);
+  el.oninput = () => { editing[key] = Date.now(); $("v-" + key).textContent = el.value; push({[key]: Number(el.value)}); };
+}
+$("rpm-auto").onchange = e => push({rpm: e.target.checked ? "auto" : Number($("s-rpm").value)});
+$("s-rpm").oninput = () => { $("rpm-auto").checked = false; editing.rpm = Date.now(); $("v-rpm").textContent = $("s-rpm").value; push({rpm: Number($("s-rpm").value)}); };
+$("gear").onchange = e => push({gear: e.target.value});
+$("mode").onchange = e => { editing.mode = Date.now(); push({mode: e.target.value}); e.target.blur(); };
+$("send-toggle").onclick = () => api("/api/ecu", {action: "sending", on: !state.ecu.sending});
+$("sc-stop").onclick = () => api("/api/ecu", {action: "stop_scenario"});
+$("fault-clear").onclick = () => api("/api/ecu", {action: "clear_fault"});
+$("setip").onclick = () => api("/api/config", {ip: $("ip").value.trim()}).catch(e => alert(e.message));
+
+function renderEcu(e) {
+  const v = e.values;
+  const idle = k => !(editing[k] && Date.now() - editing[k] < 1200);
+  for (const [key, id] of Object.entries(sliders)) {
+    const driven = (e.scenario || e.replay) && key === "speed";   // the slider follows the scenario or the replay
+    if (idle(key) && (key !== "rpm" || v.rpm !== null)) { $(id).value = driven ? Math.round(e.current.speed) : (v[key] === null ? 0 : v[key]); $("v-" + key).textContent = $(id).value; }
+  }
+  if (idle("rpm") && v.rpm === null) { $("s-rpm").value = e.current.rpm; $("v-rpm").textContent = e.current.rpm; }
+  $("rpm-auto").checked = v.rpm === null;
+  if (document.activeElement !== $("gear")) $("gear").value = v.gear === null ? "auto" : String(v.gear);
+  if (idle("mode") && document.activeElement !== $("mode")) $("mode").value = v.mode;
+  document.querySelectorAll("#warns input").forEach(c => { if (idle("warn") && document.activeElement !== c) c.checked = v.warn.includes(c.value); });
+  $("o-speed").textContent = e.current.speed.toFixed(1);
+  $("o-rpm").textContent = e.current.rpm;
+  $("o-gear").textContent = e.current.gear === "0" ? "N" : e.current.gear;
+  $("send-toggle").textContent = e.sending ? "전송 중지" : "전송 시작";
+  $("send-toggle").classList.toggle("primary", !e.sending);
+  $("send-info").textContent = e.sending ? e.hz + " Hz, 프레임 " + e.sent + "개 전송" : (e.send_error || "전송 중이 아님: 0.5초 뒤 클러스터가 통신 끊김을 표시합니다");
+  const sc = e.scenario;
+  $("sc-run").textContent = sc ? sc.name + ": " + sc.t.toFixed(0) + "초 / " + sc.length.toFixed(0) + "초" : (e.scenario_done ? "시나리오 '" + e.scenario_done + "' 가 끝났습니다. 속도는 끝난 값 그대로 유지됩니다." : "실행 중인 시나리오가 없습니다.");
+  $("sc-bar").style.width = sc ? Math.min(100, 100 * sc.t / sc.length) + "%" : "0";
+  $("fault-run").textContent = e.fault ? "결함 '" + e.fault.name + "' 진행 중" + (e.fault.name === "wrongseq" ? " (카운터가 한 번 튐)" : ", " + e.fault.left.toFixed(0) + "초 남음") : "활성 결함이 없습니다. 결함은 몇 초 동안만 이어지고, 그 뒤 프레임은 다시 정상이 됩니다.";
+  $("gwtxt").textContent = "게이트웨이 응답 정상 " + e.ok + " / 오류 " + e.err;
+  $("d-gw").className = "dot " + (e.err ? "off" : (e.ok ? "on" : ""));
+  $("d-gw").title = e.last_err || "";
+}
+
+// ---- diagnose ----
+function showResult(r) {
+  const el = $("uds-msg");
+  let t = esc(r.text || "");
+  if (r.steps) t += "<div class='muted mono'>" + r.steps.map(s => esc(s.req) + " → " + esc(s.resp || "-")).join("<br>") + "</div>";
+  else t += " <span class='mono muted'>" + esc(r.req) + " → " + esc(r.resp || "-") + "</span>";
+  el.innerHTML = "<div class='msg " + (r.ok ? "ok" : "bad") + "'>" + t + "</div>";
+  if (r.snapshot) renderSnapshot(r.snapshot);
+}
+function vehicleHtml(v) {
+  const warn = [["check", 1], ["battery", 2], ["oil", 4], ["seatbelt", 8], ["left", 16], ["right", 32]].filter(w => v.warnings & w[1]).map(w => w[0]).join(", ") || "없음";
+  return "속도 <b>" + v.speed.toFixed(1) + "</b> km/h · <b>" + v.rpm + "</b> rpm · 기어 <b>" + v.gear + "</b> · " + esc(v.mode) + "<br>냉각수 <b>" + v.coolant + "</b> °C · 연료 <b>" + v.fuel.toFixed(1) + "</b> % · 경고등: " + esc(warn);
+}
+function renderSnapshot(s) {
+  let h = "<div class='msg'><b>" + esc(s.code) + "의 스냅샷</b> (결함이 시작된 순간에 고정된 값)";
+  if (!s.records.length) h += "<br><span class='muted'>스냅샷 기록이 없습니다</span>";
+  for (const r of s.records) h += "<br>기록 " + r.record + ": " + (r.vehicle ? vehicleHtml(r.vehicle) : "<span class='muted'>알 수 없는 데이터</span>");
+  $("snap").innerHTML = h + "</div>";
+}
+document.querySelectorAll("[data-uds]").forEach(b => b.onclick = () => {
+  const [action, arg] = b.dataset.uds.split(":");
+  const body = {action};
+  if (action === "session") body.kind = arg;
+  if (action === "clear") body.what = arg;
+  if (action === "did") body.did = arg;
+  runUds(body);
+});
+$("raw-send").onclick = () => runUds({action: "raw", bytes: $("raw").value});
+$("raw").onkeydown = e => { if (e.key === "Enter") $("raw-send").click(); };
+async function runUds(body) {
+  try { showResult(await api("/api/uds", body)); }
+  catch (e) { $("uds-msg").innerHTML = "<div class='msg bad'>" + esc(e.message) + "</div>"; }
+}
+$("keepalive").onchange = e => api("/api/uds", {action: "keepalive", on: e.target.checked});
+$("refresh").onchange = e => api("/api/uds", {action: "refresh", on: e.target.checked});
+
+function renderUds(u) {
+  $("g-session").textContent = u.online ? (u.session || "-") : "응답 없음";
+  $("g-sec").textContent = u.unlocked === null ? "-" : (u.unlocked ? "해제됨" : "잠김");
+  $("g-up").textContent = u.uptime === null ? "-" : u.uptime + " s";
+  $("d-uds").className = "dot " + (u.online ? "on" : "off");
+  $("keepalive").checked = u.keepalive;
+  $("refresh").checked = u.refresh;
+  $("vehicle").innerHTML = u.vehicle ? vehicleHtml(u.vehicle) : (u.vehicle_note ? esc(u.vehicle_note) : "-");
+  $("dtc-count").textContent = "저장 " + u.dtcs.length + "개, 확정 " + u.dtcs.filter(d => d.confirmed).length + "개" + (u.paused ? " (멈춤: 시험이 실행 중)" : "");
+  $("dtcs").innerHTML = u.dtcs.length ? u.dtcs.map(d =>
+    "<tr><td class='mono'><b>" + esc(d.code) + "</b></td><td>" + esc(d.info) + "</td><td class='mono'>0x" + d.status.toString(16).toUpperCase().padStart(2, "0") + "</td><td>" +
+    d.flags.map(f => "<span class='flag " + (f === "confirmedDTC" || f === "testFailed" ? "hot" : "") + "'>" + esc(f) + "</span>").join("") +
+    "</td><td><button class='b' data-snap='" + esc(d.code) + "'>스냅샷</button> <button class='b danger' data-clear='" + esc(d.code) + "'>지우기</button></td></tr>").join("")
+    : "<tr><td colspan='5' class='muted'>저장된 DTC가 없습니다.</td></tr>";
+  document.querySelectorAll("[data-snap]").forEach(b => b.onclick = () => runUds({action: "snapshot", code: b.dataset.snap}));
+  document.querySelectorAll("[data-clear]").forEach(b => b.onclick = () => runUds({action: "clear", what: b.dataset.clear}));
+  $("uds-log").textContent = u.log.length ? u.log.slice().reverse().map(l => l.t + "  " + l.req + "  →  " + (l.resp || "(응답 없음)") + (l.note ? "   " + l.note : "")).join("\n") : "-";
+}
+
+// ---- checks ----
+function renderJobsCatalog() {
+  for (const g of ["tests", "target", "vm"]) {
+    $("jobs-" + g).innerHTML = meta.jobs.filter(j => j.group === g).map(j =>
+      "<div class='job'><button class='b' data-job='" + j.name + "'>실행</button><span>" + esc(j.title) + "</span></div>").join("");
+  }
+  document.querySelectorAll("[data-job]").forEach(b => b.onclick = () => startJob(b.dataset.job));
+}
+async function startJob(name) {
+  try {
+    const r = await api("/api/job", {name});
+    activeJob = r.id; jobFrom = 0; jobLines = [];
+    $("job-out").textContent = "";
+    return r.id;
+  } catch (e) { alert(e.message); return null; }
+}
+async function pollJob() {
+  if (!activeJob) return;
+  try {
+    const j = await api("/api/job?id=" + activeJob + "&from=" + jobFrom);
+    jobFrom = j.next; jobLines = jobLines.concat(j.lines);
+    const out = $("job-out");
+    const atEnd = out.scrollTop + out.clientHeight >= out.scrollHeight - 20;
+    out.textContent = jobLines.join("\n");
+    if (atEnd) out.scrollTop = out.scrollHeight;
+  } catch (e) { /* job gone */ }
+}
+// runs the jobs one after the other; `order` puts the VM tests in a fixed order (the cross-check restarts cluster_diag, so e2e goes first)
+async function runJobs(names) {
+  for (const name of names) {
+    const id = await startJob(name);
+    if (id === null) return;
+    while (true) {
+      await new Promise(r => setTimeout(r, 600));
+      const s = state.jobs.find(x => x.id === id);
+      if (s && s.state !== "running") break;
+    }
+  }
+}
+const names = g => meta.jobs.filter(j => j.group === g).map(j => j.name);
+const targetOrder = () => ["e2e", "cross", "env16"].filter(n => meta.jobs.some(j => j.name === n));
+$("run-all-tests").onclick = () => runJobs(names("tests"));
+$("run-all-target").onclick = () => runJobs(targetOrder());
+$("run-everything").onclick = () => runJobs(names("tests").concat(targetOrder()));
+function renderJobs(jobs) {
+  $("job-hist").innerHTML = jobs.length ? jobs.slice().reverse().map(j =>
+    "<div class='job'><span class='" + (j.state === "passed" ? "ok" : j.state === "failed" ? "bad" : "muted") + "'>" +
+    (j.state === "passed" ? "✔ 통과" : j.state === "failed" ? "✘ 실패 (rc " + j.rc + ")" : "… 실행 중") + "</span><a href='#' data-show='" + j.id + "'>" + esc(j.title) + "</a><span class='muted'>" + (j.state === "running" ? "" : j.secs + "초") + "</span></div>").join("") : "아직 실행한 것이 없습니다.";
+  document.querySelectorAll("[data-show]").forEach(a => a.onclick = ev => { ev.preventDefault(); activeJob = Number(a.dataset.show); jobFrom = 0; jobLines = []; pollJob(); });
+  document.querySelectorAll("[data-job]").forEach(b => b.disabled = jobs.some(j => j.state === "running"));
+}
+
+// ---- header and main loop ----
+// ---- graph ----
+const hist = [];
+function pushHist(s) {
+  const now = Date.now() / 1000;
+  const v = s.uds.vehicle;
+  hist.push({t: now, sentSpeed: s.ecu.sending ? s.ecu.current.speed : null, readSpeed: v ? v.speed : null,
+             sentRpm: s.ecu.sending ? s.ecu.current.rpm : null, readRpm: v ? v.rpm : null});
+  while (hist.length && now - hist[0].t > 60) hist.shift();
+}
+function drawChart(id, ka, kb, max) {
+  const c = $(id), dpr = window.devicePixelRatio || 1;
+  const w = c.clientWidth, h = c.clientHeight;
+  if (!w) return;
+  if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+  const g = c.getContext("2d");
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const css = getComputedStyle(document.documentElement);
+  const col = n => css.getPropertyValue(n).trim();
+  g.font = "11px system-ui"; g.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = 8 + (h - 22) * i / 4;
+    g.strokeStyle = col("--line"); g.beginPath(); g.moveTo(40, y); g.lineTo(w, y); g.stroke();
+    g.fillStyle = col("--muted"); g.fillText(String(Math.round(max * (1 - i / 4))), 2, y + 4);
+  }
+  const now = Date.now() / 1000;
+  const plot = (key, color) => {
+    g.strokeStyle = color; g.lineWidth = 2; g.beginPath();
+    let pen = false;
+    for (const p of hist) {
+      const v = p[key];
+      if (v === null) { pen = false; continue; }
+      const x = 40 + (w - 42) * (1 - (now - p.t) / 60), y = 8 + (h - 22) * (1 - Math.min(v, max) / max);
+      if (pen) g.lineTo(x, y); else { g.moveTo(x, y); pen = true; }
+    }
+    g.stroke();
+  };
+  plot(kb, col("--warn")); plot(ka, col("--accent"));
+  g.fillStyle = col("--muted"); g.fillText("60초 전", 42, h - 3); g.fillText("지금", w - 28, h - 3);
+}
+
+// ---- banner, recording, reports ----
+let recSig = "";
+function renderExtras(s) {
+  const msgs = [];
+  if (s.conflicts && s.conflicts.length) msgs.push("같은 대상에 말하는 다른 프로그램이 있습니다: " + s.conflicts.join(", ") + ". 진단 응답이 섞이거나 게이트웨이의 카운터 오류가 날 수 있으니 끄세요.");
+  const pi = meta && meta.target === "파이", T = pi ? "파이" : "VM";
+  if (s.vm.reachable === false) msgs.push(T + "에 ssh로 닿지 않습니다. " + T + (pi ? "가" : "이") + " 켜져 있는지, 대상 IP(" + s.ip + ")가 맞는지 확인하세요. " +
+    (pi ? "(파이 전원과 Wi-Fi를 확인하고, WSL에서 bash rpi4/start_pi.sh 를 실행하세요)" : "(VM 시작은 setup 문서의 start_vm 단계)"));
+  else if (s.vm.reachable && !s.uds.online && !s.uds.paused) msgs.push(T + (pi ? "는" : "은") + " 켜져 있지만 진단 서버가 대답하지 않습니다. 검사 탭의 \"" + T + ": cluster_diag 시작\"을 눌러 보세요.");
+  const b = $("banner");
+  b.style.display = msgs.length ? "block" : "none";
+  b.innerHTML = msgs.map(esc).join("<br>");
+
+  const e = s.ecu;
+  if (e.replay) {
+    $("sc-run").textContent = "기록 재생 중: " + e.replay.name + " (" + e.replay.t.toFixed(0) + "초 / " + e.replay.length.toFixed(0) + "초)";
+    $("sc-bar").style.width = Math.min(100, 100 * e.replay.t / e.replay.length) + "%";
+  }
+  $("rec-toggle").textContent = e.recording ? "기록 끝내고 저장" : "기록 시작";
+  $("rec-info").textContent = e.recording ? (e.recording.full ? "기록이 20분 한도에 닿았습니다 (" + e.recording.seconds + "초). 더 기록하지 않습니다. 저장하세요." : "기록 중: " + e.recording.seconds + "초") : (e.replay ? "재생 중: " + e.replay.name + " (" + e.replay.t.toFixed(0) + "초 / " + e.replay.length.toFixed(0) + "초)" : "");
+  const sig = JSON.stringify(e.recordings);
+  if (sig !== recSig) {
+    recSig = sig;
+    $("recordings").innerHTML = e.recordings.length ? e.recordings.map(n => "<button class='b' data-replay='" + esc(n) + "'>재생 " + esc(n) + "</button>").join("") : "<span class='muted'>저장된 기록이 없습니다.</span>";
+    document.querySelectorAll("[data-replay]").forEach(x => x.onclick = () => api("/api/ecu", {action: "replay", name: x.dataset.replay}).catch(err => alert(err.message)));
+  }
+  $("reports").innerHTML = s.reports.length ? "저장된 보고서: " + s.reports.slice().reverse().map(n => "<a href='/reports/" + esc(n) + "' target='_blank'>" + esc(n) + "</a>").join(" · ") : "";
+}
+$("rec-toggle").onclick = () => api("/api/ecu", {action: state.ecu.recording ? "record_stop" : "record_start"}).then(r => { if (r.saved) $("rec-info").textContent = "저장됨: " + r.saved; });
+$("report-save").onclick = () => api("/api/report", {}).then(r => { $("report-msg").textContent = "저장했습니다: reports/" + r.name; }).catch(err => alert(err.message));
+
+function renderVm(vm) {
+  $("d-vm").className = "dot " + (vm.reachable === null ? "" : vm.reachable ? "on" : "off");
+  const r = vm.running || {};
+  for (const [id, name] of [["gateway", "cluster_gateway"], ["qt", "qt_cluster"], ["diag", "cluster_diag"]])
+    $("d-" + id).className = "dot " + (vm.reachable ? (r[name] ? "on" : "off") : "");
+  $("vm-log").textContent = vm.diag_log && vm.diag_log.length ? vm.diag_log.join("\n") : "-";
+}
+async function tick() {
+  try {
+    state = await api("/api/state");
+    if (document.activeElement !== $("ip")) $("ip").value = state.ip;
+    renderEcu(state.ecu); renderUds(state.uds); renderVm(state.vm); renderJobs(state.jobs);
+    pushHist(state); drawChart("ch-speed", "sentSpeed", "readSpeed", 250); drawChart("ch-rpm", "sentRpm", "readRpm", 8000); renderExtras(state);
+    await pollJob();
+  } catch (e) { $("d-vm").className = "dot off"; }
+  setTimeout(tick, 600);
+}
+(async () => {
+  meta = await api("/api/meta");
+  document.querySelectorAll(".tgt").forEach(e => e.textContent = meta.target || "VM");
+  $("mode").innerHTML = meta.modes.map(m => "<option>" + m + "</option>").join("");
+  $("scenarios").innerHTML = Object.entries(meta.scenarios).map(([n, s]) => "<button class='b' data-sc='" + n + "'>" + n + " <span class='muted'>" + s + "초</span></button>").join("");
+  document.querySelectorAll("[data-sc]").forEach(b => b.onclick = () => api("/api/ecu", {action: "scenario", name: b.dataset.sc}));
+  $("faults").innerHTML = meta.faults.map(f => "<button class='b' data-fault='" + f + "'>" + f + "</button>").join("");
+  document.querySelectorAll("[data-fault]").forEach(b => b.onclick = () => api("/api/ecu", {action: "fault", name: b.dataset.fault}));
+  $("warns").innerHTML = meta.warn.map(w => "<label><input type='checkbox' value='" + w + "'> " + w + "</label>").join("");
+  document.querySelectorAll("#warns input").forEach(c => c.onchange = () => {
+    editing.warn = Date.now();
+    c.blur();
+    push({warn: [...document.querySelectorAll("#warns input:checked")].map(x => x.value)});
+  });
+  renderJobsCatalog();
+  tick();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# build outputs (QNX programs are built from these sources with the QNX SDP; they are not redistributed)
+qnx_cluster/x86_64/
+qnx_cluster/aarch64le/
+qnx_cluster/qt_cluster/build/
+qnx_cluster/qt_cluster/build-*/
+qnx_demo/x86_64/
+qnx_demo/aarch64le/
+qnx_cluster/app_launcher/dist/
+qnx_cluster/app_launcher/build/
+*.spec
+payload.zip
+.payload_version
+
+# Python
+__pycache__/
+*.pyc
+
+# made while running: recordings and reports of the console, the DTC memory file
+qnx_cluster/recordings/
+qnx_cluster/reports/
+*.nvm
+*.nvm.tmp
+
+# notes for the coding assistant of the author's PC
+CLAUDE.md
+AGENTS.md
+.claude/

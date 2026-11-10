@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 890 554" width="890" height="554" font-family="Malgun Gothic, Apple SD Gothic Neo, Noto Sans KR, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker></defs>
+<rect width="890" height="554" rx="14" fill="#fff"/>
+<text x="445" y="38" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">QEMU VM 준비 순서</text>
+<rect x="30" y="62" width="250" height="112" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+<circle cx="52" cy="84" r="13" fill="#15803d"/><text x="52" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">1</text>
+<text x="72" y="89" font-size="14" font-weight="700" fill="#0f172a">WSL</text>
+<text x="270" y="164" text-anchor="end" font-size="10.5" font-weight="700" fill="#15803d">exe 버튼</text>
+<text x="44" y="114" font-size="12" fill="#334155">Ubuntu-24.04 설치</text>
+<text x="44" y="131" font-size="12" fill="#334155">sudo 비밀번호 정하기</text>
+<rect x="320" y="62" width="250" height="112" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+<circle cx="342" cy="84" r="13" fill="#15803d"/><text x="342" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">2</text>
+<text x="362" y="89" font-size="14" font-weight="700" fill="#0f172a">기본 도구, 프로젝트</text>
+<text x="560" y="164" text-anchor="end" font-size="10.5" font-weight="700" fill="#15803d">exe 버튼</text>
+<text x="334" y="114" font-size="12" fill="#334155">python3, gcc, ssh</text>
+<text x="334" y="131" font-size="12" fill="#334155">프로젝트를 WSL에 설치</text>
+<rect x="610" y="62" width="250" height="112" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<circle cx="632" cy="84" r="13" fill="#b91c1c"/><text x="632" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">3</text>
+<text x="652" y="89" font-size="14" font-weight="700" fill="#0f172a">QNX 계정과 SDP</text>
+<text x="850" y="164" text-anchor="end" font-size="10.5" font-weight="700" fill="#b91c1c">직접</text>
+<text x="624" y="114" font-size="12" fill="#334155">myQNX 가입, 무료 라이선스</text>
+<text x="624" y="131" font-size="12" fill="#334155">Software Center로 SDP 8.0</text>
+<rect x="610" y="220" width="250" height="112" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+<circle cx="632" cy="242" r="13" fill="#15803d"/><text x="632" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">4</text>
+<text x="652" y="247" font-size="14" font-weight="700" fill="#0f172a">QEMU, 브리지, KVM</text>
+<text x="850" y="322" text-anchor="end" font-size="10.5" font-weight="700" fill="#15803d">exe 버튼</text>
+<text x="624" y="272" font-size="12" fill="#334155">qemu, libvirt, virbr0</text>
+<text x="624" y="289" font-size="12" fill="#334155">/dev/kvm 권한</text>
+<rect x="320" y="220" width="250" height="112" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<circle cx="342" cy="242" r="13" fill="#b91c1c"/><text x="342" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">5</text>
+<text x="362" y="247" font-size="14" font-weight="700" fill="#0f172a">VM 이미지</text>
+<text x="560" y="322" text-anchor="end" font-size="10.5" font-weight="700" fill="#b91c1c">직접</text>
+<text x="334" y="272" font-size="12" fill="#334155">quickstart.qemu 설치</text>
+<text x="334" y="289" font-size="12" fill="#334155">unpack_qemu_image.sh</text>
+<rect x="30" y="220" width="250" height="112" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<circle cx="52" cy="242" r="13" fill="#b91c1c"/><text x="52" y="247" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">6</text>
+<text x="72" y="247" font-size="14" font-weight="700" fill="#0f172a">VM 첫 부팅, SSH</text>
+<text x="270" y="322" text-anchor="end" font-size="10.5" font-weight="700" fill="#b91c1c">직접</text>
+<text x="44" y="272" font-size="12" fill="#334155">QNX 터미널에서 키 등록</text>
+<text x="44" y="289" font-size="12" fill="#334155">root 로그인 허용</text>
+<rect x="30" y="378" width="250" height="112" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+<circle cx="52" cy="400" r="13" fill="#15803d"/><text x="52" y="405" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">7</text>
+<text x="72" y="405" font-size="14" font-weight="700" fill="#0f172a">Qt 6.8.5 빌드</text>
+<text x="270" y="480" text-anchor="end" font-size="10.5" font-weight="700" fill="#15803d">exe 버튼</text>
+<text x="44" y="430" font-size="12" fill="#334155">PC용 + QNX용 (x86_64)</text>
+<text x="44" y="447" font-size="12" fill="#334155">처음 한 번, 2시간 이상</text>
+<rect x="320" y="378" width="250" height="112" rx="10" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+<circle cx="342" cy="400" r="13" fill="#4338ca"/><text x="342" y="405" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">8</text>
+<text x="362" y="405" font-size="14" font-weight="700" fill="#0f172a">계기판 빌드</text>
+<text x="560" y="480" text-anchor="end" font-size="10.5" font-weight="700" fill="#4338ca">자동</text>
+<text x="334" y="430" font-size="12" fill="#334155">gateway, diag, qt_cluster</text>
+<text x="334" y="447" font-size="12" fill="#334155">1~2분</text>
+<rect x="610" y="378" width="250" height="112" rx="10" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+<circle cx="632" cy="400" r="13" fill="#4338ca"/><text x="632" y="405" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">9</text>
+<text x="652" y="405" font-size="14" font-weight="700" fill="#0f172a">Qt 배포, 시작</text>
+<text x="850" y="480" text-anchor="end" font-size="10.5" font-weight="700" fill="#4338ca">자동</text>
+<text x="624" y="430" font-size="12" fill="#334155">Qt를 VM에 복사 (120MB)</text>
+<text x="624" y="447" font-size="12" fill="#334155">콘솔이 열림</text>
+<line x1="283" y1="118" x2="317" y2="118" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="573" y1="118" x2="607" y2="118" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="735" y1="177" x2="735" y2="217" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="607" y1="276" x2="573" y2="276" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="317" y1="276" x2="283" y2="276" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="155" y1="335" x2="155" y2="375" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="283" y1="434" x2="317" y2="434" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<line x1="573" y1="434" x2="607" y2="434" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<rect x="30" y="520" width="16" height="16" rx="3" fill="#dcfce7" stroke="#15803d"/><text x="52" y="533" font-size="12" fill="#334155">exe 버튼 (터미널에서 비밀번호 입력)</text>
+<rect x="263" y="520" width="16" height="16" rx="3" fill="#e0e7ff" stroke="#4338ca"/><text x="285" y="533" font-size="12" fill="#334155">exe가 알아서</text>
+<rect x="383" y="520" width="16" height="16" rx="3" fill="#fee2e2" stroke="#b91c1c"/><text x="405" y="533" font-size="12" fill="#334155">직접 해야 함</text>
+</svg>

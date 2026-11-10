@@ -1,0 +1,8 @@
+# Keep LF line endings so the scripts run in WSL even when checked out on Windows.
+* text eol=lf
+# Images are binary: never touch their bytes.
+*.png binary
+*.jpg binary
+*.ico binary
+*.exe binary
+*.zip binary

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 300" width="1060" height="300" font-family="Malgun Gothic, Apple SD Gothic Neo, Noto Sans KR, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1060" height="300" rx="14" fill="#ffffff"/>
+  <text x="530" y="36" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">결함이 DTC가 되기까지 (종단 시험이 확인하는 길)</text>
+
+  <rect x="20" y="64" width="180" height="150" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="110" y="90" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">① 결함 주입</text>
+  <text x="110" y="112" text-anchor="middle" font-size="12" fill="#334155">테스트 콘솔 (PC)</text>
+  <text x="110" y="138" text-anchor="middle" font-size="12" fill="#334155">crc · burst · repeat</text>
+  <text x="110" y="157" text-anchor="middle" font-size="12" fill="#334155">lost · wrongseq · silent</text>
+  <text x="110" y="183" text-anchor="middle" font-size="11" fill="#64748b">몇 초 동안 틀린 프레임</text>
+  <text x="110" y="199" text-anchor="middle" font-size="11" fill="#64748b">또는 프레임 멈춤</text>
+
+  <rect x="230" y="64" width="190" height="150" rx="10" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="325" y="90" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">② cluster_gateway</text>
+  <text x="325" y="114" text-anchor="middle" font-size="12" fill="#334155">CAN 프레임 검사</text>
+  <text x="325" y="133" text-anchor="middle" font-size="12" fill="#334155">CRC, 카운터 반복·건너뜀</text>
+  <text x="325" y="152" text-anchor="middle" font-size="12" fill="#334155">0.5초 무응답</text>
+  <text x="325" y="183" text-anchor="middle" font-size="11" fill="#64748b">틀린 프레임은 버리고</text>
+  <text x="325" y="199" text-anchor="middle" font-size="11" fill="#64748b">"원본 결함(SRC)"을 알림</text>
+
+  <rect x="450" y="64" width="190" height="150" rx="10" fill="#fff" stroke="#0f172a" stroke-width="1.5"/>
+  <text x="545" y="90" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">③ qt_cluster</text>
+  <text x="545" y="114" text-anchor="middle" font-size="12" fill="#334155">E2E 검사, 값 범위</text>
+  <text x="545" y="133" text-anchor="middle" font-size="12" fill="#334155">안전 화면 (NO SIGNAL)</text>
+  <text x="545" y="152" text-anchor="middle" font-size="12" fill="#334155">하트비트 보내기</text>
+  <text x="545" y="183" text-anchor="middle" font-size="11" fill="#64748b">검사 결과를 펄스로</text>
+  <text x="545" y="199" text-anchor="middle" font-size="11" fill="#64748b">cluster_diag에 알림</text>
+
+  <rect x="670" y="64" width="190" height="150" rx="10" fill="#fff" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="765" y="90" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">④ cluster_diag</text>
+  <text x="765" y="114" text-anchor="middle" font-size="12" fill="#334155">결과를 모아 DTC 판정</text>
+  <text x="765" y="133" text-anchor="middle" font-size="12" fill="#334155">스냅샷 (그 순간 속도 등)</text>
+  <text x="765" y="152" text-anchor="middle" font-size="12" fill="#334155">파일에 저장 (CRC 보호)</text>
+  <text x="765" y="183" text-anchor="middle" font-size="11" fill="#64748b">하트비트가 끊기면</text>
+  <text x="765" y="199" text-anchor="middle" font-size="11" fill="#64748b">U1A04</text>
+
+  <rect x="890" y="64" width="150" height="150" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="965" y="90" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">⑤ UDS로 읽기</text>
+  <text x="965" y="114" text-anchor="middle" font-size="12" fill="#334155">테스트 콘솔 (PC)</text>
+  <text x="965" y="133" text-anchor="middle" font-size="12" fill="#334155">19 02: DTC 목록</text>
+  <text x="965" y="152" text-anchor="middle" font-size="12" fill="#334155">19 04: 스냅샷</text>
+  <text x="965" y="183" text-anchor="middle" font-size="11" fill="#64748b">기대값과 비교</text>
+  <text x="965" y="199" text-anchor="middle" font-size="11" fill="#64748b">14: 지우기</text>
+
+  <line x1="202" y1="139" x2="228" y2="139" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="422" y1="139" x2="448" y2="139" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="642" y1="139" x2="668" y2="139" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="862" y1="139" x2="888" y2="139" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+
+  <text x="20" y="246" font-size="12" font-weight="700" fill="#0f172a">기대하는 DTC</text>
+  <text x="20" y="268" font-size="12" fill="#334155">crc, repeat, wrongseq → U0401 (원본 결함)   ·   burst → U0401 + U0100   ·   silent → U0100 (통신 끊김)   ·   lost → 없음 (허용 범위)</text>
+  <text x="20" y="288" font-size="12" fill="#334155">qt_cluster 4초 얼리기 → U1A04 (하트비트 끊김). 얼리는 동안 수신도 멈춰 U0100, U0401도 함께 생깁니다.</text>
+</svg>

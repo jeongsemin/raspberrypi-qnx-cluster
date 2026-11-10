@@ -1,0 +1,5 @@
+{
+  "qnx.projects.autoConfigure": "no",
+  "qnx.sdpPath": "__HOME__/qnx800",
+  "cmake.sourceDirectory": "D:/portfolio/taxi-pitstopmap/Docs/qnx-everywhere-projects/qnx_cluster/qt_cluster"
+}

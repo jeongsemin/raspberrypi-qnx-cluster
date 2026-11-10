@@ -1,0 +1,65 @@
+{
+  "version": "2.0.0",
+  "configurations": [
+    {
+      "type": "qnx-gdb",
+      "request": "launch",
+      "name": "QNX: cluster_display",
+      "gdb": "gdb",
+      "program": "${workspaceFolder}/${config:qnx.arch}/cluster_display",
+      "remotePath": "cluster_display",
+      "qnxtarget": "default",
+      "upload": true,
+      "stopAtEntry": false,
+      "preLaunchTask": "QNX: build cluster_display"
+    },
+    {
+      "type": "qnx-gdb",
+      "request": "launch",
+      "name": "QNX: speed_source",
+      "gdb": "gdb",
+      "program": "${workspaceFolder}/${config:qnx.arch}/speed_source",
+      "remotePath": "speed_source",
+      "qnxtarget": "default",
+      "upload": true,
+      "stopAtEntry": false,
+      "preLaunchTask": "QNX: build speed_source"
+    },
+    {
+      "type": "qnx-gdb",
+      "request": "launch",
+      "name": "QNX: cluster_supervisor",
+      "gdb": "gdb",
+      "program": "${workspaceFolder}/${config:qnx.arch}/cluster_supervisor",
+      "remotePath": "cluster_supervisor",
+      "qnxtarget": "default",
+      "upload": true,
+      "stopAtEntry": false,
+      "preLaunchTask": "QNX: build cluster_supervisor"
+    },
+    {
+      "type": "qnx-gdb",
+      "request": "launch",
+      "name": "QNX: cluster_gateway",
+      "gdb": "gdb",
+      "program": "${workspaceFolder}/${config:qnx.arch}/cluster_gateway",
+      "remotePath": "cluster_gateway",
+      "qnxtarget": "default",
+      "upload": true,
+      "stopAtEntry": false,
+      "preLaunchTask": "QNX: build cluster_gateway"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "QNX: cluster (display + gateway)",
+      "configurations": ["QNX: cluster_display", "QNX: cluster_gateway"],
+      "stopAll": true
+    },
+    {
+      "name": "QNX: cluster (display + source)",
+      "configurations": ["QNX: cluster_display", "QNX: speed_source"],
+      "stopAll": true
+    }
+  ]
+}

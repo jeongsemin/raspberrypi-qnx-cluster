@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "configurations": [
+    {
+      "type": "qnx-gdb",
+      "request": "launch",
+      "name": "QNX: qnx_demo",
+      "gdb": "gdb",
+      "program": "${command:qnx.autodetectBinary}",
+      "remotePath": "qnx_demo",
+      "qnxtarget": "default",
+      "upload": true,
+      "stopAtEntry": true,
+      "preLaunchTask": "${defaultBuildTask}"
+    }
+  ]
+}
