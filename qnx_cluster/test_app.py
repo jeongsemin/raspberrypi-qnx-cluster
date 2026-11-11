@@ -210,6 +210,7 @@ def test_server():
     code, _ = call("/api/config", {"ip": "1.2.3; ls"}, {"X-Cluster-App": "1"})
     check("a bad IP is refused", code == 400)
     check("the end-to-end test is in the job list", any(j["name"] == "e2e" for j in meta["jobs"]))
+    check("the driving scenario test is in the job list", any(j["name"] == "scenario" for j in meta["jobs"]))
     check("the cross-check, the environment check and the gateway jobs are in the job list",
           {"cross", "env16", "gw_start", "gw_stop"} <= {j["name"] for j in meta["jobs"]})
     import subprocess

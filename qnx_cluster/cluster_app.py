@@ -29,6 +29,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 import app_e2e
+import app_scenario
 import app_ecu
 import app_jobs
 import app_uds
@@ -69,7 +70,9 @@ class App:
         self.uds = app_uds.Uds(ip)
         native = {"e2e": ("종단 시험: 결함을 넣고 기대한 DTC가 생기는지 확인 (약 80초)", "target", lambda log: app_e2e.run(self, log)),
                   "cross": ("udsoncan / can-isotp 교차 확인 (약 40초, DTC를 스스로 만들고 cluster_diag를 다시 시작함)", "target",
-                            lambda log: app_e2e.run_cross(self, log))}
+                            lambda log: app_e2e.run_cross(self, log)),
+                  "scenario": ("주행 시나리오 시험: 시나리오 7개를 끝까지 돌리며 되읽기, 주행 중 끼어들기 6가지 (약 11분)", "target",
+                               lambda log: app_scenario.run(self, log))}
         self.jobs = app_jobs.Jobs(lambda: self.ip, self.exclusive, native)
         self.vm = app_jobs.VmStatus(lambda: self.ip)
         self.scenarios = app_ecu.load_scenarios(SCENARIO_FILE)
