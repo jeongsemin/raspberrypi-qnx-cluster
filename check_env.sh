@@ -2,6 +2,10 @@
 # Checks that the tutorial steps you have finished left the machine in the expected state.
 # Run it inside the Ubuntu / WSL terminal.
 #
+# The step numbers are those of the step-by-step tutorial this project was written for, which is not part of this
+# repository. Following SETUP_GUIDE_QEMU.md or SETUP_GUIDE_PI.md instead, use the environment check of
+# ClusterConsole.exe (qnx_cluster/app_launcher/env_check.sh): it checks the same things and names the fix.
+#
 # Usage:
 #   bash check_env.sh <step>            e.g. bash check_env.sh 2
 #   bash check_env.sh <step> <VM IP>    for steps 6 and later, if getip cannot find the VM

@@ -45,7 +45,7 @@ qt_clean_path() {
 
 qt_require_ubuntu_2404() {
     if ! grep -q 'VERSION_ID="24.04"' /etc/os-release; then
-        echo "ERROR: this is not the Ubuntu 24.04 distro. Open the Ubuntu-24.04 terminal (step 0-2)." >&2
+        echo "ERROR: this is not the Ubuntu 24.04 distro. Open the Ubuntu-24.04 terminal (wsl -d Ubuntu-24.04)." >&2
         return 1
     fi
 }

@@ -55,7 +55,8 @@ qt_build/        Qt 6.8.5 받기, PC용·QNX용 빌드, 대상에 배포
 qnx_demo/        첫 QNX 예제 (Hello QNX)
 screenshots/     예전 단계의 화면 (cluster_display, Qt 계기판)
 setup.sh         Ubuntu 홈에 qnx_demo, qnx_cluster 설치
-check_env.sh     단계별 환경 점검
+check_env.sh     단계별 튜토리얼용 환경 점검 (단계 번호는 이 저장소에 없는 튜토리얼 기준.
+                 설치 가이드를 따를 때는 exe의 환경 점검을 씁니다)
 ```
 
 ## exe 빌드

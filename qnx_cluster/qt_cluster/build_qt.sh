@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cross-builds the Qt cluster (qt_cluster) for QNX with the Qt from ../../qt_build (step 12).
+# Cross-builds the Qt cluster (qt_cluster) for QNX with the Qt from ../../qt_build.
 # Run inside the Ubuntu-24.04 terminal.
 # Usage: bash build_qt.sh              x86_64 (the VM), result build/qt_cluster
 #        bash build_qt.sh aarch64le    Raspberry Pi 4, result build-aarch64le/qt_cluster

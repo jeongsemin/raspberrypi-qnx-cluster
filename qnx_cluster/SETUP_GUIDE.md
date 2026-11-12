@@ -140,7 +140,7 @@ qnx_cluster/
 ├─ rpi4/                                              파이 시작, 가상 디스플레이 설정
 └─ app_launcher/                                      ClusterConsole.exe 소스와 빌드
 ../qt_build/                                          Qt 6.8.5 받기, 빌드, 배포
-../check_env.sh                                       환경 전체 점검
+../check_env.sh                                       단계별 튜토리얼용 환경 점검 (설치 가이드에는 exe의 점검)
 ```
 
 ## 이 문서의 검증 범위

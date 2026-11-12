@@ -26,7 +26,7 @@ static vehicle_msg_t make(uint16_t seq, float speed, float rpm)
 
 int main(void)
 {
-    /* the structure is what the tutorial says it is */
+    /* the message layout is fixed: 28 bytes */
     CHECK(sizeof(vehicle_msg_t) == 28, "sizeof(vehicle_msg_t) == 28");
 
     /* CRC-8/SAE-J1850 standard check value */

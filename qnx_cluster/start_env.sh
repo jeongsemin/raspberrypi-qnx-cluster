@@ -47,7 +47,7 @@ on_vm() { $SSH "pidin ar" 2> /dev/null | grep -q "$1"; }
 # is cut off and the guest cannot mount its disk. The repaired file has a CID line, so QEMU updates that line instead.
 fix_vmdk() {
     local d="$IMG/output/disk-qemu.vmdk" disk="$IMG/output/disk-qemu"
-    [ -f "$disk" ] || die "no disk image at $disk (see step 4 of the tutorial)"
+    [ -f "$disk" ] || die "no disk image at $disk (SETUP_GUIDE_QEMU.md step 5: install the QEMU image and unpack it)"
     if grep -aq '^RW [0-9]* FLAT' "$d" 2> /dev/null && grep -aq '^CID=' "$d" && [ "$(grep -ac '^parentCID' "$d")" -le 1 ]; then
         return
     fi

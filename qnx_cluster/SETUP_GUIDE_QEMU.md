@@ -125,7 +125,6 @@ VM에 SSH 키를 한 번 등록해야 exe가 VM을 다룰 수 있습니다. Ubun
 ```bash
 source ~/qnx800/qnxsdp-env.sh
 cd ~/qnx800/images/qemu/qemu
-sudo chmod 666 /dev/kvm
 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe mkqnximage --run
 ```
 

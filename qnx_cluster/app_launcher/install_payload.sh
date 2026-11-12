@@ -4,7 +4,7 @@
 # Usage: bash install_payload.sh <payload.zip as a WSL path>
 #
 # Fresh PC: unpacks ~/qnx-everywhere-projects and copies qnx_demo and qnx_cluster into the home folder (what
-# setup.sh does, step 0-3 and 7-4 of the tutorial). Existing folders are first copied to <name>.bak-<date-time>,
+# setup.sh does). Existing folders are first copied to <name>.bak-<date-time>,
 # then the new files are written over them: recordings, reports and the build folders stay, edited project files are
 # replaced (the backup keeps them). The programs built from the old sources are deleted, so they get built again.
 # Each folder gets a list of the files that came from the payload (.payload_files). The next update deletes the ones

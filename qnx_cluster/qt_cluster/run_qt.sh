@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copies qt_cluster to the target and starts it there (step 12-7).
+# Copies qt_cluster to the target and starts it there.
 #
 # Usage: bash run_qt.sh <IP>          start (stops a running qt_cluster or cluster_display first)
 #        bash run_qt.sh <IP> stop     stop it

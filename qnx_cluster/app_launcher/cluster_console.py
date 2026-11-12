@@ -464,7 +464,7 @@ class Launcher:
             url = guide_url(item, self.target)
             webbrowser.open(url)
             self.js("flog", "설치 가이드를 브라우저로 열었습니다: %s (인터넷이 없으면 Ubuntu의 ~/qnx_cluster 에 같은 "
-                            "파일이 있습니다). 끝나면 '다시 점검'을 누르세요." % url)
+                            "파일이 있습니다). 끝나면 '다시 점검'을 누르세요." % urllib.parse.unquote(url))
             self.rerender()
 
     def rerender(self):

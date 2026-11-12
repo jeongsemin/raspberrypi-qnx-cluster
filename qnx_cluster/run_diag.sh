@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Starts and inspects cluster_diag, the DTC server, on the VM (step 13).
+# Starts and inspects cluster_diag, the DTC server, on the target.
 #
 # Usage: bash run_diag.sh <VM IP>          copy and start it (stops a running one first)
 #        bash run_diag.sh <VM IP> log      show its log (every DTC change)

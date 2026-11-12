@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copies the tutorial projects into your WSL home directory and fills in the
+# Copies the projects (qnx_demo, qnx_cluster) into your WSL home directory and fills in the
 # __HOME__ placeholders with your real home path.
 #
 # Usage (run inside the Ubuntu / WSL terminal, from this folder):

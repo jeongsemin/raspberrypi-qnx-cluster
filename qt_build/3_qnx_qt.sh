@@ -12,7 +12,7 @@ qt_require_ubuntu_2404
 [ -d "$QT_SRC" ] || { echo "ERROR: $QT_SRC not found. Run 1_download.sh first." >&2; exit 1; }
 [ -x "$QT_HOST/bin/qmake" ] || { echo "ERROR: $QT_HOST not found. Run 2_host_qt.sh first." >&2; exit 1; }
 qt_source_sdp
-command -v qcc > /dev/null || { echo "ERROR: qcc not found. Check the SDP (step 3-7)." >&2; exit 1; }
+command -v qcc > /dev/null || { echo "ERROR: qcc not found. Check the SDP install (SETUP_GUIDE_QEMU.md or SETUP_GUIDE_PI.md step 3)." >&2; exit 1; }
 
 # CMake toolchain file for the QNX target (follows Qt's "Building Qt for QNX" page)
 TC="$QT_ROOT/qnx-$QNX_ARCH.cmake"
