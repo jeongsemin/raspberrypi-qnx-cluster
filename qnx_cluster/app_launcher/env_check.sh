@@ -75,7 +75,7 @@ if [ "$TARGET" = pi ]; then
 else
     item qemu "QEMU, libvirt 또는 브리지(virbr0) 설정이 없습니다" \
         bash -c 'command -v qemu-system-x86_64 && ip link show virbr0 && grep -qx "allow virbr0" /etc/qemu/bridge.conf'
-    item kvm "/dev/kvm 에 쓸 수 없습니다 (WSL을 다시 켤 때마다 필요)" test -w /dev/kvm
+    item kvm "/dev/kvm 에 쓸 수 없습니다 (사용자를 kvm 그룹에 넣으면 WSL을 다시 켜도 유지됩니다)" test -w /dev/kvm
     item vm_image "QNX QEMU 이미지(~/qnx800/images/qemu)가 없습니다" test -f "$HOME/qnx800/images/qemu/qemu/output/ifs.bin"
     if ping -c1 -W2 "$IP" > /dev/null 2>&1; then
         # shellcheck disable=SC2086

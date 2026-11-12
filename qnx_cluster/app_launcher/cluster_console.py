@@ -13,7 +13,8 @@
 The environment check runs before every start. Fixes that need no password run here (installing the projects from
 the payload.zip inside this exe, building, copying Qt to the target); the ones that need sudo, a Pi password or
 Windows administrator rights open a terminal or ask Windows; the QNX account, licence and images can only be
-described (tutorial qnx-everywhere-vm-setup.md).
+described: those items say what to do and open the step of the setup guide (SETUP_GUIDE_QEMU.md or
+SETUP_GUIDE_PI.md on GitHub; the same files are in ~/qnx_cluster).
 
 The choice is kept in %LOCALAPPDATA%\\ClusterConsole\\launcher.json. The console server (cluster_app.py) runs inside
 WSL and is stopped when the window is closed, together with the UltraVNC window opened here. The programs on the Pi
@@ -32,7 +33,9 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.parse
 import urllib.request
+import webbrowser
 import zipfile
 
 import webview
@@ -61,7 +64,7 @@ TARGETS = {
 # id -> title, fix kind, fix (command or text), items it needs first, optional
 #   auto: a WSL command run here, its output shown in the page    term: a WSL command in a terminal window (sudo, passwords)
 #   admin: a Windows command with administrator rights            win: a Windows command in a console window
-#   guide: only a description
+#   guide: a description of what to do by hand; the button opens that step of the setup guide (GUIDES)
 ITEMS = {
     "wsl": ("WSL과 Ubuntu-24.04", "admin", "wsl.exe --install -d Ubuntu-24.04", [], False),
     "vnc": ("UltraVNC 뷰어 (파이 화면 보기)", "win",
@@ -70,8 +73,9 @@ ITEMS = {
             ["wsl"], False),
     "projects": ("프로젝트 파일 (~/qnx-everywhere-projects, ~/qnx_cluster)", "auto", "INSTALL_PAYLOAD", ["wsl"], False),
     "sdp": ("QNX SDP 8.0과 라이선스", "guide",
-            "튜토리얼 3단계: myQNX 계정을 만들어 무료 비상업 라이선스를 받고, Ubuntu용 QNX Software Center로 SDP 8.0"
-            "(com.qnx.qnx800)을 ~/qnx800 에 설치한 뒤 로그인해 라이선스를 받습니다. 계정과 라이선스는 직접 해야 합니다.",
+            "직접 해야 합니다 (설치 가이드 3단계). myQNX 계정을 만들어 무료 비상업 라이선스를 받고, Ubuntu용 QNX "
+            "Software Center를 설치해 SDP 8.0(com.qnx.qnx800)을 ~/qnx800 에 설치한 뒤, Software Center에서 로그인해 "
+            "라이선스를 받습니다.",
             ["wsl"], False),
     "qt": ("QNX용 Qt 6.8.5 ({arch})", "term",
            "cd " + QT_BUILD_DIR + " && sudo apt update && sudo apt install -y build-essential cmake ninja-build pkg-config "
@@ -84,7 +88,7 @@ ITEMS = {
                 "sudo apt install -y python3-venv && python3 -m venv ~/uds-venv && ~/uds-venv/bin/pip install udsoncan can-isotp",
                 ["apt"], True),
     "pi_net": ("파이 네트워크 연결", "guide",
-               "라즈베리 파이 4에 QNX 8.0 이미지(QNX Software Center의 com.qnx.qnx800.quickstart.rpi4)를 SD 카드에 굽고, "
+               "직접 해야 합니다 (설치 가이드 6~7단계). 라즈베리 파이 4에 QNX 8.0 이미지(QNX Software Center의 com.qnx.qnx800.quickstart.rpi4)를 SD 카드에 굽고, "
                "부트 파티션의 wpa_supplicant.conf 에 Wi-Fi 이름과 비밀번호를 넣은 뒤 부팅합니다(약 1분). 파이가 이 PC와 "
                "같은 공유기에 붙어 있어야 합니다. 그다음 '← 대상 다시 고르기'에서 'IP 찾기'를 누르면 파이의 IP를 찾아 줍니다.",
                [], False),
@@ -108,17 +112,45 @@ ITEMS = {
              "{{ sudo virsh net-start default || true; }} && sudo virsh net-autostart default && sudo mkdir -p /etc/qemu && "
              "echo 'allow virbr0' | sudo tee /etc/qemu/bridge.conf && sudo chmod 640 /etc/qemu/bridge.conf && "
              "sudo chown root:kvm /etc/qemu/bridge.conf", ["wsl"], False),
-    "kvm": ("/dev/kvm 권한", "term", "sudo chmod 666 /dev/kvm", ["qemu"], False),
+    # /dev/kvm is root:kvm 0660 and comes back like that after every WSL restart: the kvm group keeps the access,
+    # the chmod gives it now (the new group counts only in a new WSL session)
+    "kvm": ("/dev/kvm 권한", "term", "sudo usermod -aG kvm $USER && sudo chmod 666 /dev/kvm && "
+            "echo 'kvm 그룹에 넣었습니다. WSL을 다시 시작해도 다시 할 필요가 없습니다.'", ["qemu"], False),
     "vm_image": ("QNX QEMU 이미지", "guide",
-                 "튜토리얼 4단계: QNX Software Center에서 com.qnx.qnx800.quickstart.qemu 를 설치하고 "
-                 "unpack_qemu_image.sh 로 풉니다.", ["sdp"], False),
+                 "직접 해야 합니다 (설치 가이드 5단계). QNX Software Center에서 com.qnx.qnx800.quickstart.qemu 를 "
+                 "설치하고, Ubuntu에서 cd ~/qnx800/images/qemu && ./unpack_qemu_image.sh 로 풉니다(수 분, 약 48GB).",
+                 ["sdp"], False),
     "vm_ssh": ("VM SSH 키 로그인 (root)", "guide",
-               "튜토리얼 5~6단계: VM을 처음 띄우고, VM 화면의 QNX 터미널에서 SSH 키를 등록하고 root 로그인을 허용합니다.",
+               "직접 해야 합니다 (설치 가이드 6단계). mkqnximage --run 으로 VM을 한 번 띄우고, 이 PC의 SSH 공개키를 "
+               "VM의 /root/.ssh/authorized_keys 에 넣은 뒤, VM 화면의 QNX 터미널에서 root 키 로그인을 허용합니다. "
+               "VM을 직접 띄우는 것은 이때 한 번만 하세요.",
                ["vm_image"], False),
     "vm_qt": ("VM에 Qt 배포 (/data/qt6)", "auto", "cd " + QT_BUILD_DIR + " && bash 4_deploy_qt.sh {ip}",
               ["vm_ssh", "qt", "projects"], False),
 }
-FIX_LABEL = {"auto": "자동으로 고치기", "term": "터미널에서 실행", "admin": "설치 (관리자 권한)", "win": "설치"}
+FIX_LABEL = {"auto": "자동으로 고치기", "term": "터미널에서 실행", "admin": "설치 (관리자 권한)", "win": "설치",
+             "guide": "설치 가이드 열기"}
+
+# guide item -> (guide, heading of its step); the button opens that heading of the guide on GitHub
+GUIDE_URL = "https://github.com/jeongsemin/raspberrypi-qnx-cluster/blob/main/qnx_cluster/"
+GUIDES = {
+    "sdp": ("{guide}", "3. QNX 계정, 라이선스, SDP 8.0 (직접)"),
+    "pi_net": ("SETUP_GUIDE_PI.md", "6. SD 카드 굽기 (직접)"),
+    "vm_image": ("SETUP_GUIDE_QEMU.md", "5. VM 이미지 (직접)"),
+    "vm_ssh": ("SETUP_GUIDE_QEMU.md", "6. VM 첫 부팅과 SSH (직접)"),
+}
+
+
+def gh_anchor(heading):
+    """The id GitHub gives a heading: lower case, no punctuation, spaces to hyphens."""
+    s = "".join(c for c in heading.lower() if c.isalnum() or c in " -_")
+    return s.replace(" ", "-")
+
+
+def guide_url(item, target):
+    name, heading = GUIDES[item]
+    name = name.format(guide="SETUP_GUIDE_PI.md" if target == "pi" else "SETUP_GUIDE_QEMU.md")
+    return GUIDE_URL + name + "#" + urllib.parse.quote(gh_anchor(heading))
 
 PAGE = """<!doctype html><html lang="ko"><meta charset="utf-8">
 <style>
@@ -428,6 +460,12 @@ class Launcher:
         elif kind == "auto":
             self.mode = "fix"
             threading.Thread(target=self.run_auto, args=(item,), daemon=True).start()
+        elif kind == "guide" and item in GUIDES:
+            url = guide_url(item, self.target)
+            webbrowser.open(url)
+            self.js("flog", "설치 가이드를 브라우저로 열었습니다: %s (인터넷이 없으면 Ubuntu의 ~/qnx_cluster 에 같은 "
+                            "파일이 있습니다). 끝나면 '다시 점검'을 누르세요." % url)
+            self.rerender()
 
     def rerender(self):
         """Draws the last result again (enables the buttons) without checking: the window just opened is not done yet."""

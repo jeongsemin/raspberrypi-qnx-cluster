@@ -11,6 +11,8 @@ import shlex
 import subprocess
 import time
 
+from app_scenario import STALL_MS, WIFI_DTCS, WifiWatch
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 VENV_PY = os.path.join(os.path.expanduser("~"), "uds-venv", "bin", "python")
 SPEED = 50.0
@@ -29,7 +31,11 @@ CASES = [
 # On the Pi the frames go over Wi-Fi. "lost" drops every 3rd frame on purpose, and the receiver accepts up to
 # E2E_MAX_GAP (3) lost frames in a row; a short Wi-Fi stall on top of that goes past the limit and gives a real
 # U0401. That is the network, not the DTC logic, so on the Pi this case gets one more try (the first one is logged).
+# A Wi-Fi stall of 0.5 s can also give U0100/U0401 before any fault is injected (seen once on 2026-11-11 in "crc").
+# So on the Pi a ping runs during every case, and a case whose only failure is that check, with only U0100/U0401
+# and a stall of STALL_MS or more, also gets one more try. The limits themselves stay as they are.
 RETRY_ON_WIFI = {"lost"}
+PRECHECK = "정상 프레임만 보낼 때 DTC가 없다"
 ON_WIFI = os.environ.get("QNX_ARCH", "x86_64") == "aarch64le"
 VALUE_KEYS = ("speed", "rpm", "gear", "mode", "warn", "fuel", "coolant")
 TEST_VALUES = {"speed": SPEED, "mode": "comfort", "rpm": None, "gear": None, "warn": [], "fuel": 60, "coolant": 90}
@@ -119,7 +125,9 @@ def run_cases(app, log):
         cleared = uds.clear("all")
         rec("DTC 메모리를 지운다", cleared["ok"], cleared["text"])
         time.sleep(2.5)
-        rec("정상 프레임만 보낼 때 DTC가 없다", codes() == set(), "남은 DTC: %s" % codes())
+        before = codes()
+        rec(PRECHECK, before == set(), "남은 DTC: %s" % (", ".join(sorted(before)) if before else "읽지 못함"))
+        out.append(("", "before", before))
         if how == "fault":
             ecu.inject(name)
         else:
@@ -152,20 +160,34 @@ def run_cases(app, log):
         time.sleep(1.0)
         return out
 
+    def watched(case):
+        """Runs one case with a ping on the Pi; returns its lines and the longest stall in ms."""
+        with WifiWatch(app.ip) as watch:
+            out = one_case(*case)
+        before = next((d for _, ok, d in out if ok == "before"), None)
+        return [o for o in out if o[1] != "before"], before, watch.max_ms
+
+    def wifi_precheck(out, before, stall):
+        """True when the only failure is the check before the fault, with only U0100/U0401, during a stall."""
+        failed_what = [what for what, ok, _ in out if ok is False]
+        return (failed_what == [PRECHECK] and before and set(before) <= WIFI_DTCS and stall >= STALL_MS)
+
     retried = []
     for case in CASES:
         name = case[0]
         log("")
         log("[%s]" % name)
-        out = one_case(*case)
-        if name in RETRY_ON_WIFI and ON_WIFI and any(ok is False for _, ok, _ in out):
+        out, before, stall = watched(case)
+        failed_any = any(ok is False for _, ok, _ in out)
+        if ON_WIFI and failed_any and (name in RETRY_ON_WIFI or wifi_precheck(out, before, stall)):
             # the first try is not counted, but it is shown and named in the summary
             for what, ok, detail in out:
                 if ok is False:
                     log("  재시도  첫 시도 실패: %s%s" % (what, ("  (" + detail + ")") if detail else ""))
-            log("  재시도  파이는 Wi-Fi에서 프레임이 더 사라질 수 있어 한 번 더 시험합니다.")
+            log("  재시도  파이는 Wi-Fi에서 프레임이 더 사라질 수 있어 한 번 더 시험합니다 (Wi-Fi 최대 멈춤 %.0fms)."
+                % stall)
             retried.append(name)
-            out = one_case(*case)
+            out, before, stall = watched(case)
         for what, ok, detail in out:
             if ok is None:
                 log(what)

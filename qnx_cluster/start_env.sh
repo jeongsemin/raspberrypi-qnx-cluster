@@ -10,7 +10,7 @@
 #
 # The VM runs detached (setsid): it keeps running when this terminal is closed.
 # The VM has 4 CPUs (-smp in the qemu options). LP_NUM_THREADS=N limits the CPU threads that draw its screen (default 3).
-# One step is yours: /dev/kvm must be writable (sudo chmod 666 /dev/kvm, after every WSL restart).
+# One step is yours: /dev/kvm must be writable (once: sudo usermod -aG kvm $USER, then a new WSL session).
 set -u
 cd "$(dirname "$0")"
 
@@ -61,7 +61,7 @@ step "1. the VM ($IP)"
 if vm_up; then
     echo "already running"
 else
-    [ -w /dev/kvm ] || die "/dev/kvm is not writable. Run once:  sudo chmod 666 /dev/kvm   (or, from PowerShell: wsl -d Ubuntu-24.04 -u root chmod 666 /dev/kvm)"
+    [ -w /dev/kvm ] || die "/dev/kvm is not writable. Run once:  sudo usermod -aG kvm \$USER && sudo chmod 666 /dev/kvm   (the group keeps it after a WSL restart)"
     pgrep -f qemu-system-x86_64 > /dev/null && die "a VM process runs but does not answer; stop it with: bash start_env.sh stop"
     fix_vmdk
     # shellcheck disable=SC1091
