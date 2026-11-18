@@ -1,0 +1,76 @@
+## A: everything at priority 10 (as started), load at 15
+     14   245779 system/bin/screen                                                                 10r 
+      3   245779 system/bin/screen                                                                 15r 
+      1   323600 system/bin/fullscreen-winmgr                                                      10r 
+      6   778274 data/qt6/qt_cluster                                                               10r 
+      1   909347 tmp/cluster_gateway                                                               10r 
+      2  8507428 tmp/cluster_diag                                                                  10r 
+DTCs before the load:
+  -> 19 02 FF
+  <- 59 02 2F
+     status availability mask 0x2F, 0 DTC(s)
+### ./rt_load -p 15 -c all -s 3
+LOAD prio=15 cpus=all secs=3 burst_ms=0 period_ms=0 threads=4
+LOAD cpu=0 busy_ms=2989
+LOAD cpu=1 busy_ms=2991
+LOAD cpu=2 busy_ms=2994
+LOAD cpu=3 busy_ms=2995
+
+DTCs after the load (frames still coming):
+  -> 19 02 FF
+  <- 59 02 2F C1 00 00 26 C4 01 00 26 DA 04 00 26   (15 bytes)
+     status availability mask 0x2F, 3 DTC(s)
+     U0100  fault type 00  status 0x26  testFailedThisOperationCycle pendingDTC testFailedSinceLastClear
+     U0401  fault type 00  status 0x26  testFailedThisOperationCycle pendingDTC testFailedSinceLastClear
+     U1A04  fault type 00  status 0x26  testFailedThisOperationCycle pendingDTC testFailedSinceLastClear
+
+## B: qt_cluster, cluster_gateway, cluster_diag at 20, load at 15
+     13   245779 system/bin/screen                                                                 10r 
+      3   245779 system/bin/screen                                                                 15r 
+      1   245779 system/bin/screen                                                                 20r 
+      1   323600 system/bin/fullscreen-winmgr                                                      10r 
+      6   778274 data/qt6/qt_cluster                                                               20r 
+      1   909347 tmp/cluster_gateway                                                               20r 
+      2  8896548 tmp/cluster_diag                                                                  20r 
+DTCs before the load:
+  -> 19 02 FF
+  <- 59 02 2F
+     status availability mask 0x2F, 0 DTC(s)
+### ./rt_load -p 15 -c all -s 3
+LOAD prio=15 cpus=all secs=3 burst_ms=0 period_ms=0 threads=4
+LOAD cpu=0 busy_ms=2973
+LOAD cpu=1 busy_ms=2996
+LOAD cpu=2 busy_ms=2991
+LOAD cpu=3 busy_ms=2995
+
+DTCs after the load (frames still coming):
+  -> 19 02 FF
+  <- 59 02 2F DA 04 00 26
+     status availability mask 0x2F, 1 DTC(s)
+     U1A04  fault type 00  status 0x26  testFailedThisOperationCycle pendingDTC testFailedSinceLastClear
+
+## C: as B, and the graphics server screen at 20 too
+     17   245779 system/bin/screen                                                                 20r 
+      1   323600 system/bin/fullscreen-winmgr                                                      10r 
+      6   778274 data/qt6/qt_cluster                                                               20r 
+      1   909347 tmp/cluster_gateway                                                               20r 
+      2  9289764 tmp/cluster_diag                                                                  20r 
+DTCs before the load:
+  -> 19 02 FF
+  <- 59 02 2F
+     status availability mask 0x2F, 0 DTC(s)
+### ./rt_load -p 15 -c all -s 3
+LOAD prio=15 cpus=all secs=3 burst_ms=0 period_ms=0 threads=4
+LOAD cpu=0 busy_ms=2822
+LOAD cpu=1 busy_ms=2979
+LOAD cpu=2 busy_ms=2954
+LOAD cpu=3 busy_ms=2984
+
+DTCs after the load (frames still coming):
+  -> 19 02 FF
+  <- 59 02 2F
+     status availability mask 0x2F, 0 DTC(s)
+
+screen threads back at:      14 10r
+screen threads back at:       3 15r
+priorities back at 10, DTC memory cleared

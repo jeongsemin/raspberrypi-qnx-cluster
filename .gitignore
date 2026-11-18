@@ -5,6 +5,8 @@ qnx_cluster/qt_cluster/build/
 qnx_cluster/qt_cluster/build-*/
 qnx_demo/x86_64/
 qnx_demo/aarch64le/
+qnx_cluster/rt_lab/x86_64/
+qnx_cluster/rt_lab/aarch64le/
 qnx_cluster/app_launcher/dist/
 qnx_cluster/app_launcher/build/
 *.spec
@@ -18,6 +20,9 @@ __pycache__/
 # made while running: recordings and reports of the console, the DTC memory file
 qnx_cluster/recordings/
 qnx_cluster/reports/
+# the real-time measurements of step 17 (kernel traces are several MB); rt_lab/sample_results keeps a small copy
+qnx_cluster/rt_lab/results/
+*.kev
 *.nvm
 *.nvm.tmp
 

@@ -1,0 +1,18 @@
+### ./rt_inversion -m none -n 20 -c 1
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=none rounds=20 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=20 min_us=24222.6 p50_us=24835.9 p99_us=36733.3 p999_us=36733.3 max_us=36733.3 mean_us=25776.8
+RESULT inversion mode=none low_ms=4 medium_ms=20 medium_ran_first=20/20
+
+### ./rt_inversion -m inherit -n 20 -c 1
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=inherit rounds=20 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=20 min_us=4036.4 p50_us=4215.7 p99_us=4598.1 p999_us=4598.1 max_us=4598.1 mean_us=4238.6
+RESULT inversion mode=inherit low_ms=4 medium_ms=20 medium_ran_first=0/20
+
+### ./rt_inversion -m protect -n 20 -c 1
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=protect rounds=20 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=20 min_us=4020.6 p50_us=4155.4 p99_us=4689.6 p999_us=4689.6 max_us=4689.6 mean_us=4188.6
+RESULT inversion mode=protect low_ms=4 medium_ms=20 medium_ran_first=0/20
+

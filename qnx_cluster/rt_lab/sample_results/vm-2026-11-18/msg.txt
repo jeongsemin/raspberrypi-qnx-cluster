@@ -1,0 +1,52 @@
+### ./rt_msg -n 2000 -c 1 -H
+TARGET prog=rt_msg cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG count=2000 client_prio=40 server_prio=10 cpu=1 work_us=50 interval_us=1000 channel=inherit
+RESULT roundtrip n=2000 min_us=53.1 p50_us=66.2 p99_us=336.6 p999_us=946.3 max_us=3235.0 mean_us=86.9
+RESULT server channel=inherit server_prio=10 client_prio=40 ran_at_min=40 ran_at_max=40
+          <     20.0 us       0 
+      20.0 ..     50.0 us       0 
+      50.0 ..    100.0 us    1618 ########################################
+     100.0 ..    200.0 us     329 #########
+     200.0 ..    500.0 us      43 ##
+     500.0 ..   1000.0 us       9 #
+    1000.0 ..   2000.0 us       0 
+    2000.0 ..   5000.0 us       1 #
+    5000.0 ..  10000.0 us       0 
+         >=  10000.0 us       0 
+
+### ./rt_load -p 20 -c 1 -b 5 -P 10 -s 5 > load.txt & sleep 1; ./rt_msg -n 2000 -c 1 -H; wait; cat load.txt
+TARGET prog=rt_msg cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG count=2000 client_prio=40 server_prio=10 cpu=1 work_us=50 interval_us=1000 channel=inherit
+RESULT roundtrip n=2000 min_us=52.4 p50_us=62.6 p99_us=195.3 p999_us=396.5 max_us=561.7 mean_us=72.4
+RESULT server channel=inherit server_prio=10 client_prio=40 ran_at_min=40 ran_at_max=40
+          <     20.0 us       0 
+      20.0 ..     50.0 us       0 
+      50.0 ..    100.0 us    1840 ########################################
+     100.0 ..    200.0 us     142 ####
+     200.0 ..    500.0 us      17 #
+     500.0 ..   1000.0 us       1 #
+    1000.0 ..   2000.0 us       0 
+    2000.0 ..   5000.0 us       0 
+    5000.0 ..  10000.0 us       0 
+         >=  10000.0 us       0 
+LOAD prio=20 cpus=1 secs=5 burst_ms=5 period_ms=10 threads=1
+LOAD cpu=1 busy_ms=2255
+
+### ./rt_load -p 20 -c 1 -b 5 -P 10 -s 5 > load.txt & sleep 1; ./rt_msg -n 2000 -c 1 -f -H; wait; cat load.txt
+TARGET prog=rt_msg cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG count=2000 client_prio=40 server_prio=10 cpu=1 work_us=50 interval_us=1000 channel=fixed
+RESULT roundtrip n=2000 min_us=52.9 p50_us=75.1 p99_us=5307.2 p999_us=14551.2 max_us=19717.7 mean_us=1024.6
+RESULT server channel=fixed server_prio=10 client_prio=40 ran_at_min=10 ran_at_max=10
+          <     20.0 us       0 
+      20.0 ..     50.0 us       0 
+      50.0 ..    100.0 us    1340 ########################################
+     100.0 ..    200.0 us     237 ########
+     200.0 ..    500.0 us      44 ##
+     500.0 ..   1000.0 us      12 #
+    1000.0 ..   2000.0 us       5 #
+    2000.0 ..   5000.0 us      11 #
+    5000.0 ..  10000.0 us     347 ###########
+         >=  10000.0 us       4 #
+LOAD prio=20 cpus=1 secs=5 burst_ms=5 period_ms=10 threads=1
+LOAD cpu=1 busy_ms=2260
+

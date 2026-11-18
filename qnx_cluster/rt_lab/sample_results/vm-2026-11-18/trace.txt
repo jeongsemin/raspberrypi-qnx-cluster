@@ -1,0 +1,87 @@
+### rm -f trace-none.kev; tracelogger -w -s 2 -f trace-none.kev > /dev/null 2>&1 & sleep 1; ./rt_inversion -m none -n 1 -c 1; wait; ls -l trace-none.kev
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=none rounds=1 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=1 min_us=27448.6 p50_us=27448.6 p99_us=27448.6 p999_us=27448.6 max_us=27448.6 mean_us=27448.6
+RESULT inversion mode=none low_ms=4 medium_ms=20 medium_ran_first=1/1
+-rw-r--r--  1 root root 3344480 2026-11-18 00:12 trace-none.kev
+
+== time line of CPU 1, last round (ms from the round start)
+     0.000          "round 0 (none)"
+     0.004  H       runs   0.002 ms at priority 30
+     0.006  M       runs   0.001 ms at priority 20
+     0.007  L       runs   0.004 ms at priority 10
+     0.009          "L locked"
+     0.011  C       runs   0.003 ms at priority 50
+     0.014  H       runs   0.003 ms at priority 30
+     0.015          "H wants the mutex"
+     0.017  M       runs   5.579 ms at priority 20
+     0.018          "M start"
+     5.697  other   runs   0.092 ms at priority 254  (pid 1)
+     5.788  M       runs   2.794 ms at priority 20
+     8.582  other   runs   0.110 ms at priority 254  (pid 1)
+     8.710  M       runs  14.487 ms at priority 20
+    23.191          "M end"
+    23.197  C       runs   0.004 ms at priority 50
+    23.201  M       runs   0.001 ms at priority 20
+    23.202  L       runs   4.257 ms at priority 10
+    27.455          "L unlock (ran at 10)"
+    27.459  H       runs   0.002 ms at priority 30
+    27.461          "H got the mutex"
+  (6 short runs of other threads under 50 us left out)
+
+== who had CPU 1 (one column = 0.43 ms, '#' = more than half of it)
+  C     |.                                                     .         |
+  H     |.                                                              .|
+  M     |######################################################.         |
+  L     |.                                                     ##########|
+  other | .      .    .      .                                           |
+        0 ms                                                       27.5 ms
+
+== while H waited for the mutex (27.446 ms)
+  M     had the CPU  22.862 ms   (priority 20)
+  L     had the CPU   4.257 ms   (priority 10)
+  other had the CPU   0.320 ms   (priority 21,140,254)
+RESULT trace h_wait_ms=27.446 m_ms=22.862 l_ms=4.257 other_ms=0.320 l_prio=10
+### rm -f trace-inherit.kev; tracelogger -w -s 2 -f trace-inherit.kev > /dev/null 2>&1 & sleep 1; ./rt_inversion -m inherit -n 1 -c 1; wait; ls -l trace-inherit.kev
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=inherit rounds=1 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=1 min_us=4348.4 p50_us=4348.4 p99_us=4348.4 p999_us=4348.4 max_us=4348.4 mean_us=4348.4
+RESULT inversion mode=inherit low_ms=4 medium_ms=20 medium_ran_first=0/1
+-rw-r--r--  1 root root 3549638 2026-11-18 00:12 trace-inherit.kev
+
+== time line of CPU 1, last round (ms from the round start)
+     0.000          "round 0 (inherit)"
+     0.002  H       runs   0.001 ms at priority 30
+     0.004  other   runs   0.119 ms at priority 10  (pid 8015900)
+     0.132  L       runs   0.003 ms at priority 10
+     0.134          "L locked"
+     0.135  C       runs   0.002 ms at priority 50
+     0.137  H       runs   0.003 ms at priority 30
+     0.138          "H wants the mutex"
+     0.140  L       runs   3.776 ms at priority 30
+     3.989  other   runs   0.069 ms at priority 140  (pid 249877)
+     4.058  L       runs   0.422 ms at priority 30
+     4.475          "L unlock (ran at 30)"
+     4.480  L       runs   0.001 ms at priority 10
+     4.480  H       runs   0.008 ms at priority 30
+     4.485          "H got the mutex"
+     4.488  C       runs   0.004 ms at priority 50
+     4.492  H       runs   0.013 ms at priority 30
+     4.505  M       runs  21.580 ms at priority 20
+     4.509          "M start"
+    26.115          "M end"
+  (6 short runs of other threads under 50 us left out)
+
+== who had CPU 1 (one column = 0.41 ms, '#' = more than half of it)
+  C     |.         ..                                                    |
+  H     |.         ..                                                    |
+  M     |           #####################################################|
+  L     |###########                                                     |
+  other |. .      .    .       .                                         |
+        0 ms                                                       26.1 ms
+
+== while H waited for the mutex (4.346 ms)
+  M     had the CPU   0.000 ms   (priority -)
+  L     had the CPU   4.199 ms   (priority 10,30)
+  other had the CPU   0.142 ms   (priority 140,254)
+RESULT trace h_wait_ms=4.346 m_ms=0.000 l_ms=4.199 other_ms=0.142 l_prio=10,30

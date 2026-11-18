@@ -1,0 +1,54 @@
+TARGET prog=rt_timer cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG period_us=1000 count=5000 prio=10 cpu=1
+RESULT interval n=5000 min_us=0.6 p50_us=1011.8 p99_us=2670.2 p999_us=9647.7 max_us=18384.9 mean_us=1069.5
+RESULT jitter period_us=1000 jitter_us=18384.3 late_10pct=1650 missed=455
+TARGET prog=rt_timer cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG period_us=1000 count=5000 prio=30 cpu=1
+RESULT interval n=5000 min_us=1.0 p50_us=1009.1 p99_us=2400.1 p999_us=9708.8 max_us=16724.7 mean_us=1066.4
+RESULT jitter period_us=1000 jitter_us=16723.7 late_10pct=1573 missed=401
+TARGET prog=rt_gap cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG secs=5 prio=60 cpu=1 gap_us=20
+RESULT gap n=2531 min_us=20.0 p50_us=37.3 p99_us=383.2 p999_us=1612.8 max_us=8553.2 mean_us=62.1
+RESULT gaps secs=5 over_us=20 count=2531 lost_ms=157.1 lost_pct=3.14
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=none rounds=20 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=20 min_us=24222.6 p50_us=24835.9 p99_us=36733.3 p999_us=36733.3 max_us=36733.3 mean_us=25776.8
+RESULT inversion mode=none low_ms=4 medium_ms=20 medium_ran_first=20/20
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=inherit rounds=20 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=20 min_us=4036.4 p50_us=4215.7 p99_us=4598.1 p999_us=4598.1 max_us=4598.1 mean_us=4238.6
+RESULT inversion mode=inherit low_ms=4 medium_ms=20 medium_ran_first=0/20
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=protect rounds=20 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=20 min_us=4020.6 p50_us=4155.4 p99_us=4689.6 p999_us=4689.6 max_us=4689.6 mean_us=4188.6
+RESULT inversion mode=protect low_ms=4 medium_ms=20 medium_ran_first=0/20
+TARGET prog=rt_msg cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG count=2000 client_prio=40 server_prio=10 cpu=1 work_us=50 interval_us=1000 channel=inherit
+RESULT roundtrip n=2000 min_us=53.1 p50_us=66.2 p99_us=336.6 p999_us=946.3 max_us=3235.0 mean_us=86.9
+RESULT server channel=inherit server_prio=10 client_prio=40 ran_at_min=40 ran_at_max=40
+TARGET prog=rt_msg cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG count=2000 client_prio=40 server_prio=10 cpu=1 work_us=50 interval_us=1000 channel=inherit
+RESULT roundtrip n=2000 min_us=52.4 p50_us=62.6 p99_us=195.3 p999_us=396.5 max_us=561.7 mean_us=72.4
+RESULT server channel=inherit server_prio=10 client_prio=40 ran_at_min=40 ran_at_max=40
+TARGET prog=rt_msg cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG count=2000 client_prio=40 server_prio=10 cpu=1 work_us=50 interval_us=1000 channel=fixed
+RESULT roundtrip n=2000 min_us=52.9 p50_us=75.1 p99_us=5307.2 p999_us=14551.2 max_us=19717.7 mean_us=1024.6
+RESULT server channel=fixed server_prio=10 client_prio=40 ran_at_min=10 ran_at_max=10
+TARGET prog=rt_timer cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG period_us=1000 count=3000 prio=10 cpu=1
+RESULT interval n=3000 min_us=0.3 p50_us=701.5 p99_us=6551.7 p999_us=10825.3 max_us=19854.6 mean_us=1030.8
+RESULT jitter period_us=1000 jitter_us=19854.4 late_10pct=616 missed=325
+TARGET prog=rt_timer cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG period_us=1000 count=3000 prio=30 cpu=1
+RESULT interval n=3000 min_us=21.6 p50_us=998.2 p99_us=1830.3 p999_us=9783.3 max_us=14624.2 mean_us=1031.3
+RESULT jitter period_us=1000 jitter_us=14602.6 late_10pct=709 missed=97
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=none rounds=1 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=1 min_us=27448.6 p50_us=27448.6 p99_us=27448.6 p999_us=27448.6 max_us=27448.6 mean_us=27448.6
+RESULT inversion mode=none low_ms=4 medium_ms=20 medium_ran_first=1/1
+RESULT trace h_wait_ms=27.446 m_ms=22.862 l_ms=4.257 other_ms=0.320 l_prio=10
+TARGET prog=rt_inversion cpus=4 cycles_per_sec=2497777477 tick_us=1000.0
+CONFIG mode=inherit rounds=1 cpu=1 low_ms=4 medium_ms=20 prio_low=10 prio_med=20 prio_high=30
+RESULT high_wait n=1 min_us=4348.4 p50_us=4348.4 p99_us=4348.4 p999_us=4348.4 max_us=4348.4 mean_us=4348.4
+RESULT inversion mode=inherit low_ms=4 medium_ms=20 medium_ran_first=0/1
+RESULT trace h_wait_ms=4.346 m_ms=0.000 l_ms=4.199 other_ms=0.142 l_prio=10,30

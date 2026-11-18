@@ -17,7 +17,8 @@ import zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))       # .../qnx-everywhere-projects
 TOP = "qnx-everywhere-projects"
-SKIP_DIRS = {"__pycache__", "x86_64", "aarch64le", "dist", "recordings", "reports", "screenshots", ".git", ".claude"}
+SKIP_DIRS = {"__pycache__", "x86_64", "aarch64le", "dist", "recordings", "reports", "results", "screenshots", ".git",
+             ".claude"}             # results: rt_lab's measurements (step 17), tens of MB with the kernel traces
 SKIP_NAMES = {"CLAUDE.md", "AGENTS.md"}   # notes for the coding assistant of this PC, of no use to other people
 SKIP_PREFIX = ("build",)                  # qt_cluster/build, qt_cluster/build-aarch64le
 SKIP_FILES = (".nvm", ".pyc", ".exe", ".zip")
