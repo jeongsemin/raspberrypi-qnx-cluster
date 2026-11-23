@@ -28,7 +28,7 @@
 
 ## 1. exe 실행과 환경 점검
 
-1. `ClusterConsole.exe`와 `README.txt`를 같은 폴더에 둡니다.
+1. [Releases](https://github.com/jeongsemin/raspberrypi-qnx-cluster/releases/latest)에서 `ClusterConsole.exe`와 `README.txt`를 받아 같은 폴더에 둡니다.
 2. 처음 실행할 때 **"Windows의 PC 보호"** 창이 뜨면 "추가 정보" → "실행"을 누릅니다. 아예 실행되지 않으면 파일 오른쪽 클릭 → 속성 → "차단 해제" 체크 → 확인.
 3. 첫 화면에서 **"VM으로 시작"** 을 누릅니다. VM IP는 기본값 `192.168.122.146`을 그대로 둡니다(6단계에서 확인한 IP가 다르면 고칩니다).
 
@@ -249,7 +249,7 @@ bash 3_qnx_qt.sh
 
 ## 10. 다음부터 실행하기
 
-1. exe 실행 → **"VM으로 시작"**. 고르는 화면 없이 바로 시작하려면 바로 가기에 `--vm`을 붙입니다.
+exe 실행 → **"VM으로 시작"**. 고르는 화면 없이 바로 시작하려면 바로 가기에 `--vm`을 붙입니다.
 
 ```
 ClusterConsole.exe --vm
@@ -267,7 +267,7 @@ ClusterConsole.exe --vm
 |---|---|
 | "/dev/kvm 권한" 실패 | 버튼을 누르고 sudo 비밀번호를 넣습니다. 사용자를 `kvm` 그룹에 넣으므로 한 번이면 됩니다. 예전 방식(`chmod`만)으로 했다면 WSL을 다시 시작할 때마다 실패하니 버튼을 한 번 더 누릅니다. |
 | VM이 부팅되지 않음 | `mkqnximage --run`을 여러 번 쓰면 디스크 설정 파일에 줄이 쌓여 부팅이 안 될 수 있습니다(6단계 경고). exe나 `start_env.sh`로 시작하면 부팅 전에 고칩니다. |
-| VM은 부팅됐는데 IP를 받지 못함 (ssh 시간 초과) | WSL이 완전히 다시 시작되지 않아 VM에 IP를 주는 libvirt 네트워크가 꺼진 경우입니다. PowerShell에서 `wsl --shutdown`을 실행한 뒤 exe를 다시 실행합니다. |
+| VM은 부팅됐는데 IP를 받지 못함 (`the VM does not answer ping after 200 s`) | exe를 닫으면 WSL이 몇 초 뒤 저절로 멈추는데, 이때 브리지(virbr0)가 남아 다음에 VM에 IP를 주는 libvirt 네트워크가 켜지지 않는 경우입니다. PowerShell에서 `wsl --shutdown`을 실행한 뒤 exe를 다시 실행합니다. |
 | VM IP가 다름 | VM 화면의 QNX 터미널에서 `ifconfig`로 IP를 보고 exe 첫 화면의 VM IP를 고칩니다. |
 | Qt 빌드가 멈추거나 실패 | 대개 메모리 부족입니다. `.wslconfig`를 적용하고 같은 버튼을 다시 누릅니다. |
 | `qcc`가 라이선스 오류 | Software Center에서 라이선스를 받지 않았습니다 (3단계). |

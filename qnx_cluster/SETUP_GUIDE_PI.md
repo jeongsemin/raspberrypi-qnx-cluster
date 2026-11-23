@@ -32,7 +32,7 @@ QNX 8.0을 올린 라즈베리 파이 4에 계기판을 띄우는 환경을 처�
 
 ## 1. exe 실행과 환경 점검
 
-1. `ClusterConsole.exe`와 `README.txt`를 같은 폴더에 둡니다.
+1. [Releases](https://github.com/jeongsemin/raspberrypi-qnx-cluster/releases/latest)에서 `ClusterConsole.exe`와 `README.txt`를 받아 같은 폴더에 둡니다.
 2. 처음 실행할 때 **"Windows의 PC 보호"** 창이 뜨면 "추가 정보" → "실행"을 누릅니다. 아예 실행되지 않으면 파일 오른쪽 클릭 → 속성 → "차단 해제" 체크 → 확인.
 3. 첫 화면에서 **"파이로 시작"** 을 누릅니다. 아직 준비가 안 되었어도 괜찮습니다. 무엇이 빠졌는지 점검 화면이 알려 줍니다.
 
